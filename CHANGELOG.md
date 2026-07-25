@@ -1,5 +1,13 @@
 # Changelog
 
+## Phase 6 — Rematch cleanup
+
+- Renamed the main **New Match** control to **Rematch**.
+- Removed the redundant button area from the end-of-game banner.
+- Deleted the obsolete banner button handler and all dedicated styling.
+- Kept **Match Setup** as the only route for changing characters or match mode.
+
+
 ## End-of-game banner cleanup
 
 - Removed the unused **Review Game** button.

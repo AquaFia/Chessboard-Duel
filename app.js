@@ -614,10 +614,6 @@ function startGame(){
  if(config.whiteMode==="ai")scheduleAi();
 }
 $("#setupBtn").onclick=()=>{$("#setupModal").hidden=false};
-$("#resultNewMatch").onclick=()=>{
- pauseMatch();
- startGame();
-};
 $("#cancelSetup").onclick=()=>{$("#setupModal").hidden=true};
 $("#startMatch").onclick=startGame;
 $("#swap").onclick=()=>{const a=$("#whiteCharacter").value;$("#whiteCharacter").value=$("#blackCharacter").value;$("#blackCharacter").value=a};

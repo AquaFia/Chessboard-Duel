@@ -129,3 +129,10 @@ At game end, the result banner also computes:
   profile and the actual moves played
 
 All review information is derived in memory from the current game's move history.
+
+
+## Match controls
+
+The primary restart control is **Rematch**, which immediately starts another
+game with the current characters and settings. The result banner is
+informational only. Use **Match Setup** to change the matchup or mode.
