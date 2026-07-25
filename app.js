@@ -374,6 +374,7 @@ function playNextAiMove(){
 function rewindOneMove(){
  if(!game.history().length)return;
  pauseMatch();
+ hideResult();
  game.undo();
  selected=null;
  $("#moves").lastElementChild?.remove();
@@ -397,12 +398,49 @@ function scheduleAi(){
   if(m){const made=game.move(m);afterMove(made)}
  },Number($("#delay").value));
 }
+function drawReason(){
+ if(game.isStalemate?.())return "Stalemate";
+ if(game.isThreefoldRepetition?.())return "Threefold repetition";
+ if(game.isInsufficientMaterial?.())return "Insufficient material";
+ return "Draw";
+}
+function hideResult(){
+ $("#resultBanner").hidden=true;
+}
+function showResult(){
+ const banner=$("#resultBanner");
+ const moveCount=game.history().length;
+ const fullMoves=Math.ceil(moveCount/2);
+
+ if(game.isCheckmate()){
+  const winner=game.turn()==="w"?config.black:config.white;
+  const side=game.turn()==="w"?"Black":"White";
+  banner.style.setProperty("--winner1",winner.theme.primary);
+  banner.style.setProperty("--winner2",winner.theme.secondary);
+  $("#resultMark").textContent="♔";
+  $("#resultLabel").textContent="Checkmate";
+  $("#resultTitle").textContent=`${winner.shortName||winner.name} wins`;
+  $("#resultSummary").textContent=`${side} wins by checkmate • ${fullMoves} ${fullMoves===1?"move":"moves"}`;
+ }else{
+  banner.style.setProperty("--winner1","#7d748d");
+  banner.style.setProperty("--winner2","#b8afc8");
+  $("#resultMark").textContent="½";
+  $("#resultLabel").textContent="Match drawn";
+  $("#resultTitle").textContent="Draw";
+  $("#resultSummary").textContent=`${drawReason()} • ${fullMoves} ${fullMoves===1?"move":"moves"}`;
+ }
+
+ banner.hidden=false;
+}
+
 function finish(){
  running=false;$("#play").textContent="▶ Run";
- let text=game.isCheckmate()?`${game.turn()==="w"?config.black.shortName:config.white.shortName} wins by checkmate.`:"The game ends in a draw.";
+ let text=game.isCheckmate()?`${game.turn()==="w"?config.black.shortName:config.white.shortName} wins by checkmate.`:`The game ends in a ${drawReason().toLowerCase()}.`;
  $("#statusDetail").textContent=text;
+ showResult();
 }
 function startGame(){
+ hideResult();
  catalog.forEach(character=>{delete character._brain;delete character._mood});
  config={
   white:chars[$("#whiteCharacter").value],black:chars[$("#blackCharacter").value],
@@ -423,6 +461,8 @@ function startGame(){
  if(config.whiteMode==="ai")scheduleAi();
 }
 $("#setupBtn").onclick=()=>{$("#setupModal").hidden=false};
+$("#reviewGame").onclick=hideResult;
+$("#resultNewMatch").onclick=()=>{$("#setupModal").hidden=false};
 $("#cancelSetup").onclick=()=>{$("#setupModal").hidden=true};
 $("#startMatch").onclick=startGame;
 $("#swap").onclick=()=>{const a=$("#whiteCharacter").value;$("#whiteCharacter").value=$("#blackCharacter").value;$("#blackCharacter").value=a};

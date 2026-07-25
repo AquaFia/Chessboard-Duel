@@ -13,6 +13,18 @@
  <div class="board-panel">
   <div class="hud"><div class="chip" id="whiteChip">WHITE</div><b>VS</b><div class="chip" id="blackChip">BLACK</div></div>
   <div class="momentum"><span class="l" id="momentumLeft"></span><span class="r" id="momentumRight"></span></div>
+  <section class="result-banner" id="resultBanner" hidden aria-live="polite">
+   <div class="result-mark" id="resultMark">♔</div>
+   <div class="result-copy">
+    <span id="resultLabel">Match complete</span>
+    <strong id="resultTitle">Result</strong>
+    <small id="resultSummary"></small>
+   </div>
+   <div class="result-actions">
+    <button id="reviewGame">Review Game</button>
+    <button class="primary" id="resultNewMatch">New Match</button>
+   </div>
+  </section>
   <div class="board" id="board"></div>
   <div class="status"><b id="turnText">Choose a match</b><span id="fenText">Move 1</span></div>
   <div class="controls">
