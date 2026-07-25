@@ -56,6 +56,38 @@
       "Neither model achieved dominance."
     ]
   },
+  "relationships": {
+    "jace": {
+      "opening": [
+        "Try not to announce every clue before I exploit it, bestie.",
+        "A cryptologist across the board? Finally, an audience that might keep up."
+      ],
+      "move": [
+        "You found the pattern. I found the leverage.",
+        "Very clever, babes. Also extremely broadcastable."
+      ],
+      "capture": [
+        "Your evidence has been removed from circulation.",
+        "That clue tested poorly with the target demographic."
+      ],
+      "check": [
+        "Your security problem is now the main story.",
+        "Careful, bestie. The board is trending against you."
+      ],
+      "win": [
+        "You decoded everything except the ending.",
+        "Excellent investigation. Wrong conclusion."
+      ],
+      "lose": [
+        "Fine. You found the one pattern I failed to monetize.",
+        "Do not look that delighted. I am revising the model."
+      ],
+      "draw": [
+        "A shared failure to dominate. Adorable.",
+        "Statistically acceptable. Narratively unfinished."
+      ]
+    }
+  },
   "defaultExpression": "composed",
   "expressionMap": {
     "opening": "composed",

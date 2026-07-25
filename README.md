@@ -136,3 +136,13 @@ All review information is derived in memory from the current game's move history
 The primary restart control is **Rematch**, which immediately starts another
 game with the current characters and settings. The result banner is
 informational only. Use **Match Setup** to change the matchup or mode.
+
+
+## Character chemistry
+
+Characters may define pair-specific dialogue under `relationships`, keyed by
+the opponent character ID. Supported chemistry events are `opening`, `move`,
+`capture`, `check`, `win`, `lose`, and `draw`.
+
+When a relationship line exists for the current opponent and event, it is used.
+Otherwise, the character's normal personality dialogue is used.

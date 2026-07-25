@@ -1,5 +1,14 @@
 # Changelog
 
+## Phase 7 — Character Chemistry
+
+- Added optional pair-specific relationship dialogue to character JSON.
+- Added matchup-aware opening lines for both characters.
+- Added chemistry lines for ordinary moves, captures, checks, wins, losses, and draws.
+- Added schema validation for relationship event groups.
+- Replaced the old single-character dialogue selector with one opponent-aware path.
+
+
 ## Phase 6 — Rematch cleanup
 
 - Renamed the main **New Match** control to **Rematch**.

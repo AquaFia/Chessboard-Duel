@@ -40,10 +40,23 @@ async function loadCharacters(){
 function validateCharacter(character,file){
  const required=["corePersonality","chessAptitude","currentChessSkill","playstyle","signatureBehaviors"];
  if(!character.id)throw new Error(`${file} is missing id.`);
+ if(!character.dialogue)throw new Error(`${character.id} is missing dialogue.`);
  if(!character.personalityProfile)throw new Error(`${character.id} is missing personalityProfile.`);
  for(const section of required){
   if(character.personalityProfile[section]==null){
    throw new Error(`${character.id} personalityProfile is missing ${section}.`);
+  }
+ }
+ if(character.relationships){
+  for(const [opponentId,events] of Object.entries(character.relationships)){
+   if(!events||typeof events!=="object"||Array.isArray(events)){
+    throw new Error(`${character.id} relationship with ${opponentId} must be an event object.`);
+   }
+   for(const [event,lines] of Object.entries(events)){
+    if(!Array.isArray(lines)||!lines.length||lines.some(line=>typeof line!=="string"||!line.trim())){
+     throw new Error(`${character.id} relationship ${opponentId}.${event} must contain dialogue lines.`);
+    }
+   }
   }
  }
 }
@@ -305,9 +318,14 @@ function expressionForMood(character,mood,event){
   ||character.defaultExpression
   ||"neutral";
 }
-function dialogueFor(c,event,mood){
- const lines=c.dialogue[mood]||c.dialogue[event]||c.dialogue.move;
+function chooseLine(lines){
  return lines[Math.floor(seedRng()*lines.length)];
+}
+function dialogueFor(character,opponent,event,mood){
+ const relationshipLines=character.relationships?.[opponent.id]?.[event];
+ if(relationshipLines)return chooseLine(relationshipLines);
+ const standardLines=character.dialogue[mood]||character.dialogue[event]||character.dialogue.move;
+ return chooseLine(standardLines);
 }
 function afterMove(move,autoContinue=true){
  renderBoard([move.from,move.to]);appendMove(move);
@@ -324,7 +342,7 @@ function afterMove(move,autoContinue=true){
 
  setCharacter(side,actor,expressionForMood(actor,mood,event));
  setCharacter(opponentSide,opponent,expressionForMood(opponent,opponentMood,"move"));
- speak(actor,dialogueFor(actor,event,mood),side);
+ speak(actor,dialogueFor(actor,opponent,event,mood),side);
  $("#statusDetail").textContent=`${actor.shortName||actor.name} is ${mood}.`;
 
  if(game.isGameOver()){finish();updateMoveControls();return}
@@ -439,11 +457,12 @@ function clearOutcomeState(){
   card.classList.remove("winner","loser","drawn");
  });
 }
-function setPostMatchLine(side,character,event){
- const mood=event==="mate"?"triumphant":event==="draw"?"calm":"frustrated";
+function setPostMatchLine(side,character,opponent,event){
+ const mood=event==="win"?"triumphant":event==="draw"?"calm":"frustrated";
+ const expressionEvent=event==="win"?"mate":event==="lose"?"losing":"draw";
  character._mood=mood;
- setCharacter(side,character,expressionForMood(character,mood,event));
- $(`#${side}Speech`).textContent=dialogueFor(character,event,mood);
+ setCharacter(side,character,expressionForMood(character,mood,expressionEvent));
+ $(`#${side}Speech`).textContent=dialogueFor(character,opponent,event,mood);
 }
 function showPostMatchReactions(){
  clearOutcomeState();
@@ -455,16 +474,16 @@ function showPostMatchReactions(){
   const winnerSide=whiteWon?"left":"right";
   const loserSide=whiteWon?"right":"left";
 
-  setPostMatchLine(winnerSide,winner,"mate");
-  setPostMatchLine(loserSide,loser,"losing");
+  setPostMatchLine(winnerSide,winner,loser,"win");
+  setPostMatchLine(loserSide,loser,winner,"lose");
   $(`#${winnerSide}Card`).classList.add("winner","active");
   $(`#${loserSide}Card`).classList.add("loser");
   $(`#${loserSide}Card`).classList.remove("active");
   return;
  }
 
- setPostMatchLine("left",config.white,"draw");
- setPostMatchLine("right",config.black,"draw");
+ setPostMatchLine("left",config.white,config.black,"draw");
+ setPostMatchLine("right",config.black,config.white,"draw");
  $("#leftCard").classList.add("drawn","active");
  $("#rightCard").classList.add("drawn","active");
 }
@@ -608,7 +627,10 @@ function startGame(){
  config.black._mood=moodFor(config.black,"opening");
  setCharacter("left",config.white,expressionForMood(config.white,config.white._mood,"opening"));
  setCharacter("right",config.black,expressionForMood(config.black,config.black._mood,"opening"));
- speak(config.white,config.white.dialogue.opening[0],"left");
+ $("#leftSpeech").textContent=dialogueFor(config.white,config.black,"opening",config.white._mood);
+ $("#rightSpeech").textContent=dialogueFor(config.black,config.white,"opening",config.black._mood);
+ $("#leftCard").classList.add("active");
+ $("#rightCard").classList.add("active");
  $("#setupModal").hidden=true;createBoard();
  updateMoveControls();
  if(config.whiteMode==="ai")scheduleAi();
