@@ -1,5 +1,14 @@
 # Changelog
 
+## New Match restart behavior
+
+### Updated file
+
+- `app.js`
+  - The **New Match** button now immediately starts a fresh game using the currently selected characters and player/AI modes.
+  - The setup modal is no longer reopened when starting a rematch.
+
+
 ## Reading controls and timeline update
 
 ### Updated files

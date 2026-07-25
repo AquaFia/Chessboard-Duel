@@ -235,7 +235,10 @@ $("#play").onclick=()=>{running=!running;running?scheduleAi():pauseMatch()};
 $("#lastMove").onclick=rewindOneMove;
 $("#nextMove").onclick=playNextAiMove;
 $("#delay").oninput=updateDelayLabel;
-$("#newGame").onclick=()=>{$("#setupModal").hidden=false;pauseMatch()};
+$("#newGame").onclick=()=>{
+ pauseMatch();
+ startGame();
+};
 try{
  await loadCharacters();
  updateDelayLabel();
