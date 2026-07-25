@@ -1,5 +1,20 @@
 # Changelog
 
+## Phase 2 — Personality presence
+
+- Added five simple moods to every character: calm, focused, confident,
+  excited, and frustrated.
+- Mood now controls the active portrait expression and ordinary move dialogue.
+- Checks, captures, winning positions, losing positions, and complicated
+  boards cause visible mood changes.
+- AI thinking time now varies slightly with focus, impulsiveness, complexity,
+  and current mood while still respecting the reading-speed slider.
+- Split move evaluation into `analyzeMove()`, `chessScore()`, and
+  `personalityScore()` so chess rules and personality preferences are easier
+  to understand.
+- Added no persistence, mood history, decay system, new files, or frameworks.
+
+
 ## Phase 1 cleanup — Required personality profiles
 
 - Removed the obsolete top-level `playstyle` objects from Jace and Juno.

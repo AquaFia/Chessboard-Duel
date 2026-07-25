@@ -39,11 +39,18 @@ async function loadCharacters(){
 
 function validateCharacter(character,file){
  const required=["corePersonality","chessAptitude","currentChessSkill","playstyle","signatureBehaviors"];
+ const moods=["calm","focused","confident","excited","frustrated"];
  if(!character.id)throw new Error(`${file} is missing id.`);
  if(!character.personalityProfile)throw new Error(`${character.id} is missing personalityProfile.`);
  for(const section of required){
   if(character.personalityProfile[section]==null){
    throw new Error(`${character.id} personalityProfile is missing ${section}.`);
+  }
+ }
+ if(!character.moods)throw new Error(`${character.id} is missing moods.`);
+ for(const mood of moods){
+  if(!character.moods[mood]?.expression||!character.moods[mood]?.dialogue?.length){
+   throw new Error(`${character.id} mood is incomplete: ${mood}.`);
   }
  }
 }
@@ -181,49 +188,80 @@ function generateBrain(c){
   complexity:clamp01(pct(core.creativity)*.25+pct(core.riskTolerance)*.25+pct(core.curiosity)*.2+(chaoticStyle?.3:0)),
   queenPreference,
   simplification:clamp01(pct(core.caution)*.35+pct(apt.longTermPlanning)*.25+(defensiveStyle?.25:0)-dislikesDraws*.2),
-  pressure:clamp01(pct(core.bluffing)*.4+pct(core.confidence)*.25+pct(core.aggression)*.2+(includesText(styles,"psychological")?.15:0))
+  pressure:clamp01(pct(core.bluffing)*.4+pct(core.confidence)*.25+pct(core.aggression)*.2+(includesText(styles,"psychological")?.15:0)),
+  impulsiveness:pct(core.impulsiveness),
+  focus:pct(apt.focus)
  };
 }
 function brainFor(c){
  return c._brain||(c._brain=generateBrain(c));
 }
-function moveScore(move,c){
- const brain=brainFor(c), before=evaluate(), actor=move.color;
+function analyzeMove(move){
+ const before=evaluate();
+ const actor=move.color;
  const movingValue=value[move.piece]||0;
+
  game.move(move);
+
  const after=evaluate();
- const materialGain=(actor==="w"?after-before:before-after);
  const replies=game.moves({verbose:true});
- const forcingReplies=replies.filter(r=>r.captured||String(r.san).includes("+")).length;
- let score=materialGain*(.75+brain.material*.8);
+ const forcingReplies=replies.filter(reply=>reply.captured||String(reply.san).includes("+")).length;
+ const facts={
+  actor,
+  movingValue,
+  materialGain:actor==="w"?after-before:before-after,
+  mate:game.isCheckmate(),
+  check:game.inCheck(),
+  captureValue:value[move.captured]||0,
+  captured:move.captured||null,
+  castle:move.san.includes("O-O"),
+  queenMove:move.piece==="q",
+  center:["c4","c5","d4","d5","e4","e5","f4","f5"].includes(move.to),
+  early:game.history().length<16,
+  replyCount:replies.length,
+  complexity:Math.min(1,(replies.length+forcingReplies*2)/38)
+ };
 
- if(game.isCheckmate())score+=100000;
- else if(game.inCheck())score+=75+135*brain.tactics+90*brain.pressure;
+ game.undo();
+ return facts;
+}
+function chessScore(facts){
+ let score=facts.materialGain;
+ if(facts.mate)score+=100000;
+ else if(facts.check)score+=90;
+ if(facts.captured)score+=facts.captureValue*.25;
+ if(facts.castle)score+=45;
+ if(facts.center)score+=18;
+ if(facts.early&&!facts.queenMove)score+=12;
+ return score;
+}
+function personalityScore(facts,brain){
+ let score=0;
 
- if(move.captured){
-  score+=(value[move.captured]||0)*(.15+.55*brain.material);
+ if(facts.check)score+=135*brain.tactics+90*brain.pressure;
+ if(facts.captured){
+  score+=facts.captureValue*(.55*brain.material);
   score+=35*brain.aggression;
-  if(move.captured==="q")score+=110*brain.pressure;
+  if(facts.captured==="q")score+=110*brain.pressure;
  }
+ if(facts.castle)score+=100*brain.kingSafety;
+ if(facts.queenMove)score+=18*brain.pressure-38*brain.kingSafety;
+ if(facts.queenMove&&brain.queenPreference>.8&&facts.captured)score+=45;
+ if(facts.center)score+=34*brain.positional;
+ if(facts.early&&!facts.queenMove)score+=16*brain.positional;
 
- if(move.san.includes("O-O"))score+=45+100*brain.kingSafety;
- if(move.piece==="q")score+=18*brain.pressure-38*brain.kingSafety;
- if(move.piece==="q"&&brain.queenPreference>.8&&move.captured)score+=45;
+ score+=(facts.complexity-.45)*115*brain.complexity;
+ score+=(18-facts.replyCount)*4*brain.simplification;
+ if(facts.captured)score-=facts.movingValue*.025*brain.risk;
 
- const center=["c4","c5","d4","d5","e4","e5","f4","f5"].includes(move.to)?1:0;
- score+=center*(18+34*brain.positional);
- if(move.piece!=="p"&&game.history().length<16)score+=16*brain.positional;
-
- // More legal and forcing replies generally create a messier position.
- const complexity=Math.min(1,(replies.length+forcingReplies*2)/38);
- score+=(complexity-.45)*115*brain.complexity;
-
- // Cautious characters prefer reducing reply options; chaotic characters resist it.
- score+=(18-replies.length)*4*brain.simplification;
- if(move.captured)score-=movingValue*.025*brain.risk;
-
- // Personality-driven imperfection. Higher Elo narrows the noise.
+ return score;
+}
+function moveScore(move,c){
+ const brain=brainFor(c);
+ const facts=analyzeMove(move);
  const skillControl=clamp01((brain.elo-600)/1800);
+ let score=chessScore(facts)+personalityScore(facts,brain);
+
  score+=(seedRng()-.5)*(45+150*brain.randomness)*(1-.55*skillControl);
  score+=(seedRng()-.5)*80*brain.novelty;
 
@@ -231,7 +269,6 @@ function moveScore(move,c){
   score-=120+seedRng()*260;
  }
 
- game.undo();
  return score;
 }
 function chooseMove(c){
@@ -251,21 +288,49 @@ function chooseMove(c){
  }
  return pool[0].m;
 }
-function expressionFor(character,event){
- return character.expressionMap?.[event] || character.defaultExpression || "neutral";
+function actorScore(color){
+ const score=evaluate();
+ return color==="w"?score:-score;
 }
-function dialogueFor(c,move){
- let key="move";
- if(game.isCheckmate())key="mate";else if(game.isDraw())key="draw";else if(game.inCheck())key="check";else if(move?.captured)key="capture";else if(game.history().length<=2)key="opening";else{
-  const ev=evaluate()*(game.turn()==="w"?-1:1);if(ev>250)key="winning";if(ev<-250)key="losing";
- }
- const lines=c.dialogue[key]||c.dialogue.move;return {text:lines[Math.floor(seedRng()*lines.length)],key};
+function moodAfterMove(c,move){
+ const score=actorScore(move.color);
+ if(game.isCheckmate())return "excited";
+ if(score>250)return "confident";
+ if(score<-250)return "frustrated";
+ if(game.inCheck()||move.captured)return "excited";
+
+ const brain=brainFor(c);
+ const legalCount=game.moves().length;
+ if(legalCount>28&&brain.complexity>.6)return "focused";
+ return brain.novelty>.72?"curious":"focused";
+}
+function eventAfterMove(move){
+ if(game.isCheckmate())return "mate";
+ if(game.isDraw())return "draw";
+ if(game.inCheck())return "check";
+ if(move.captured)return "capture";
+ return null;
+}
+function setMood(c,mood){
+ c._state={mood};
+ return c.moods[mood];
+}
+function reactionFor(c,move){
+ const mood=moodAfterMove(c,move);
+ const moodData=setMood(c,mood);
+ const event=eventAfterMove(move);
+ const lines=event?c.dialogue[event]:moodData.dialogue;
+ return {
+  text:lines[Math.floor(seedRng()*lines.length)],
+  expression:moodData.expression,
+  mood
+ };
 }
 function afterMove(move,autoContinue=true){
  renderBoard([move.from,move.to]);appendMove(move);
  const actor=move.color==="w"?config.white:config.black, side=move.color==="w"?"left":"right";
- const d=dialogueFor(actor,move),exp=expressionFor(actor,d.key);
- setCharacter(side,actor,exp);speak(actor,d.text,side);
+ const reaction=reactionFor(actor,move);
+ setCharacter(side,actor,reaction.expression);speak(actor,reaction.text,side);
  if(game.isGameOver()){finish();updateMoveControls();return}
  updateMoveControls();
  if(autoContinue)scheduleAi();
@@ -318,11 +383,31 @@ function rewindOneMove(){
  $("#moves").lastElementChild?.remove();
  $("#leftCard").classList.remove("active");
  $("#rightCard").classList.remove("active");
+ const whiteMood=setMood(config.white,"focused");
+ const blackMood=setMood(config.black,"focused");
+ setCharacter("left",config.white,whiteMood.expression);
+ setCharacter("right",config.black,blackMood.expression);
  $("#leftSpeech").textContent="Waiting...";
  $("#rightSpeech").textContent="Waiting...";
  renderBoard();
  $("#statusDetail").textContent="Rewound one move";
  updateMoveControls();
+}
+
+function thinkingDelay(c){
+ const base=Number($("#delay").value);
+ const brain=brainFor(c);
+ const mood=c._state?.mood||"calm";
+ const moves=game.moves({verbose:true});
+ const forcing=moves.filter(move=>move.captured||String(move.san).includes("+")).length;
+ const complexity=Math.min(1,(moves.length+forcing*2)/38);
+
+ let factor=.9+brain.focus*.25+complexity*(.25+brain.tactics*.15)-brain.impulsiveness*.22;
+ if(mood==="confident")factor-=.14;
+ if(mood==="frustrated")factor+=.12;
+ if(mood==="focused")factor+=.1;
+
+ return Math.round(base*Math.max(.55,Math.min(1.55,factor)));
 }
 
 function scheduleAi(){
@@ -334,7 +419,7 @@ function scheduleAi(){
   if(!running)return;
   const c=game.turn()==="w"?config.white:config.black,m=chooseMove(c);
   if(m){const made=game.move(m);afterMove(made)}
- },Number($("#delay").value));
+ },thinkingDelay(c));
 }
 function finish(){
  running=false;$("#play").textContent="▶ Run";
@@ -342,7 +427,7 @@ function finish(){
  $("#statusDetail").textContent=text;
 }
 function startGame(){
- catalog.forEach(character=>delete character._brain);
+ catalog.forEach(character=>{delete character._brain;delete character._state});
  config={
   white:chars[$("#whiteCharacter").value],black:chars[$("#blackCharacter").value],
   whiteMode:$("#mode").value==="hvh"?"human":$("#mode").value==="hva"?"human":"ai",
@@ -352,8 +437,10 @@ function startGame(){
  document.documentElement.style.setProperty("--right",config.black.theme.primary);document.documentElement.style.setProperty("--right2",config.black.theme.secondary);
  seedRng=$("#seed").value.trim()?seeded($("#seed").value.trim()):Math.random;
  game=new Chess();selected=null;$("#moves").innerHTML="";$("#statusDetail").textContent="Match initialized";
- setCharacter("left",config.white,config.white.defaultExpression||"neutral");
- setCharacter("right",config.black,config.black.defaultExpression||"neutral");
+ const whiteMood=setMood(config.white,"calm");
+ const blackMood=setMood(config.black,"calm");
+ setCharacter("left",config.white,whiteMood.expression);
+ setCharacter("right",config.black,blackMood.expression);
  speak(config.white,config.white.dialogue.opening[0],"left");
  $("#setupModal").hidden=true;createBoard();
  updateMoveControls();

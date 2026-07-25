@@ -69,3 +69,18 @@ To add a character:
 
 A missing or incomplete profile is treated as an error instead of being replaced
 with generic behavior.
+
+
+## Personality presence
+
+Each character has five small mood entries: `calm`, `focused`, `confident`,
+`excited`, and `frustrated`. Each mood contains one expression and a short set
+of dialogue lines.
+
+The game chooses a mood from the current board state after each move. Captures,
+checks, advantage, disadvantage, and complicated positions can change the mood.
+The same personality brain also adjusts AI thinking time slightly around the
+reading-speed slider.
+
+There is no mood history, persistence, decay simulation, or separate mood
+engine. The current mood is a single temporary value.
