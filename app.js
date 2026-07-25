@@ -4,7 +4,7 @@ import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm";
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const glyph={w:{k:"♔",q:"♕",r:"♖",b:"♗",n:"♘",p:"♙"},b:{k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟"}};
 const value={p:100,n:320,b:330,r:500,q:900,k:0};
-let catalog=[], chars={}, game=new Chess(), config={}, selected=null, running=false, timer=null, seedRng=Math.random;
+let catalog=[], chars={}, game=new Chess(), config={}, selected=null, running=false, timer=null, seedRng=Math.random, openingStates={w:null,b:null};
 
 async function loadCharacters(){
  const response=await fetch("characters/characters.json",{cache:"no-store"});
@@ -55,6 +55,35 @@ function validateCharacter(character,file){
    for(const [event,lines] of Object.entries(events)){
     if(!Array.isArray(lines)||!lines.length||lines.some(line=>typeof line!=="string"||!line.trim())){
      throw new Error(`${character.id} relationship ${opponentId}.${event} must contain dialogue lines.`);
+    }
+   }
+  }
+ }
+ if(character.openingProfile){
+  for(const color of ["white","black"]){
+   const profile=character.openingProfile[color];
+   if(!profile)continue;
+   if(typeof profile!=="object"||Array.isArray(profile)){
+    throw new Error(`${character.id} openingProfile.${color} must be an object.`);
+   }
+   if(profile.freeformWeight!=null&&(!Number.isFinite(profile.freeformWeight)||profile.freeformWeight<0)){
+    throw new Error(`${character.id} openingProfile.${color}.freeformWeight must be a non-negative number.`);
+   }
+   if(!Array.isArray(profile.lines)){
+    throw new Error(`${character.id} openingProfile.${color}.lines must be an array.`);
+   }
+   for(const [index,line] of profile.lines.entries()){
+    if(!line||typeof line!=="object"||Array.isArray(line)){
+     throw new Error(`${character.id} openingProfile.${color}.lines[${index}] must be an object.`);
+    }
+    if(typeof line.name!=="string"||!line.name.trim()){
+     throw new Error(`${character.id} opening line ${color}[${index}] is missing a name.`);
+    }
+    if(!Number.isFinite(line.weight)||line.weight<0){
+     throw new Error(`${character.id} opening line ${line.name} must have a non-negative weight.`);
+    }
+    if(!Array.isArray(line.moves)||!line.moves.length||line.moves.some(move=>typeof move!=="string"||!move.trim())){
+     throw new Error(`${character.id} opening line ${line.name} must contain SAN moves.`);
     }
    }
   }
@@ -254,9 +283,66 @@ function personalityScore(move,c,position){
 function moveScore(move,c){
  return personalityScore(move,c,chessScore(move));
 }
+function weightedOpeningChoice(options,freeformWeight){
+ const total=options.reduce((sum,line)=>sum+line.weight,0)+freeformWeight;
+ if(total<=0)return null;
+ let roll=seedRng()*total;
+ if(roll<freeformWeight)return null;
+ roll-=freeformWeight;
+ for(const line of options){
+  roll-=line.weight;
+  if(roll<=0)return line;
+ }
+ return options.at(-1)||null;
+}
+function openingProfileFor(character,color){
+ return character.openingProfile?.[color==="w"?"white":"black"]||null;
+}
+function openingMove(character){
+ const color=game.turn();
+ const profile=openingProfileFor(character,color);
+ if(!profile)return null;
+
+ const history=game.history();
+ let state=openingStates[color];
+
+ if(state===undefined||state===null){
+  const candidates=profile.lines.filter(line=>{
+   if(history.length>=line.moves.length)return false;
+   return history.every((san,index)=>line.moves[index]===san);
+  });
+  const line=weightedOpeningChoice(candidates,profile.freeformWeight||0);
+  state=line?{name:line.name,moves:[...line.moves],active:true}:{active:false,freeform:true};
+  openingStates[color]=state;
+ }
+
+ if(!state.active)return null;
+ if(history.length>=state.moves.length){
+  state.active=false;
+  return null;
+ }
+ if(!history.every((san,index)=>state.moves[index]===san)){
+  state.active=false;
+  return null;
+ }
+
+ const expectedSan=state.moves[history.length];
+ const legal=game.moves({verbose:true}).find(move=>move.san===expectedSan);
+ if(!legal){
+  state.active=false;
+  return null;
+ }
+
+ character._openingName=state.name;
+ character._usedOpeningMove=true;
+ return legal;
+}
 function chooseMove(c){
  const moves=game.moves({verbose:true});
  if(!moves.length)return null;
+ c._usedOpeningMove=false;
+ const bookMove=openingMove(c);
+ if(bookMove)return bookMove;
  const brain=brainFor(c);
  const ranked=moves.map(m=>({m,s:moveScore(m,c)})).sort((a,b)=>b.s-a.s);
  const skillControl=clamp01((brain.elo-600)/1800);
@@ -343,7 +429,9 @@ function afterMove(move,autoContinue=true){
  setCharacter(side,actor,expressionForMood(actor,mood,event));
  setCharacter(opponentSide,opponent,expressionForMood(opponent,opponentMood,"move"));
  speak(actor,dialogueFor(actor,opponent,event,mood),side);
- $("#statusDetail").textContent=`${actor.shortName||actor.name} is ${mood}.`;
+ $("#statusDetail").textContent=actor._usedOpeningMove
+  ?`${actor.shortName||actor.name} follows ${actor._openingName}.`
+  :`${actor.shortName||actor.name} is ${mood}.`;
 
  if(game.isGameOver()){finish();updateMoveControls();return}
  updateMoveControls();
@@ -421,6 +509,11 @@ function rewindOneMove(){
  clearMovePreview();
  clearOutcomeState();
  game.undo();
+ openingStates={w:null,b:null};
+ delete config.white._openingName;
+ delete config.black._openingName;
+ delete config.white._usedOpeningMove;
+ delete config.black._usedOpeningMove;
  selected=null;
  $("#moves").lastElementChild?.remove();
  $("#leftCard").classList.remove("active");
@@ -613,7 +706,13 @@ function startGame(){
  hideResult();
  clearMovePreview();
  clearOutcomeState();
- catalog.forEach(character=>{delete character._brain;delete character._mood});
+ openingStates={w:null,b:null};
+ catalog.forEach(character=>{
+  delete character._brain;
+  delete character._mood;
+  delete character._openingName;
+  delete character._usedOpeningMove;
+ });
  config={
   white:chars[$("#whiteCharacter").value],black:chars[$("#blackCharacter").value],
   whiteMode:$("#mode").value==="hvh"?"human":$("#mode").value==="hva"?"human":"ai",

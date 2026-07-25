@@ -88,6 +88,75 @@
       ]
     }
   },
+  "openingProfile": {
+    "white": {
+      "freeformWeight": 25,
+      "lines": [
+        {
+          "name": "Vienna Game",
+          "moves": [
+            "e4",
+            "e5",
+            "Nc3"
+          ],
+          "weight": 34
+        },
+        {
+          "name": "Queen's Gambit",
+          "moves": [
+            "d4",
+            "d5",
+            "c4"
+          ],
+          "weight": 30
+        },
+        {
+          "name": "King's Gambit",
+          "moves": [
+            "e4",
+            "e5",
+            "f4"
+          ],
+          "weight": 18
+        }
+      ]
+    },
+    "black": {
+      "freeformWeight": 25,
+      "lines": [
+        {
+          "name": "Sicilian Defense",
+          "moves": [
+            "e4",
+            "c5",
+            "Nf3",
+            "d6"
+          ],
+          "weight": 38
+        },
+        {
+          "name": "Dutch Defense",
+          "moves": [
+            "d4",
+            "f5",
+            "c4",
+            "Nf6"
+          ],
+          "weight": 24
+        },
+        {
+          "name": "King's Indian Defense",
+          "moves": [
+            "d4",
+            "Nf6",
+            "c4",
+            "g6"
+          ],
+          "weight": 22
+        }
+      ]
+    }
+  },
   "defaultExpression": "composed",
   "expressionMap": {
     "opening": "composed",

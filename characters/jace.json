@@ -90,6 +90,75 @@
       ]
     }
   },
+  "openingProfile": {
+    "white": {
+      "freeformWeight": 55,
+      "lines": [
+        {
+          "name": "Réti Opening",
+          "moves": [
+            "Nf3",
+            "d5",
+            "c4"
+          ],
+          "weight": 28
+        },
+        {
+          "name": "English Opening",
+          "moves": [
+            "c4",
+            "e5",
+            "Nc3"
+          ],
+          "weight": 24
+        },
+        {
+          "name": "Bird Opening",
+          "moves": [
+            "f4",
+            "d5",
+            "Nf3"
+          ],
+          "weight": 12
+        }
+      ]
+    },
+    "black": {
+      "freeformWeight": 55,
+      "lines": [
+        {
+          "name": "Modern Defense",
+          "moves": [
+            "e4",
+            "g6",
+            "d4",
+            "Bg7"
+          ],
+          "weight": 26
+        },
+        {
+          "name": "Sicilian Defense",
+          "moves": [
+            "e4",
+            "c5",
+            "Nf3",
+            "Nc6"
+          ],
+          "weight": 20
+        },
+        {
+          "name": "Dutch Defense",
+          "moves": [
+            "d4",
+            "f5",
+            "c4",
+            "Nf6"
+          ],
+          "weight": 14
+        }
+      ]
+    }
+  },
   "defaultExpression": "curious",
   "expressionMap": {
     "opening": "curious",
