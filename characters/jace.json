@@ -58,6 +58,38 @@
       "We appear to have produced a paradox."
     ]
   },
+  "relationships": {
+    "juno": {
+      "opening": [
+        "Okay, Juno—show me which part of the board you already turned into a narrative.",
+        "You look way too pleased with this position, and we have not even started."
+      ],
+      "move": [
+        "You planned that reaction before you planned the move, didn't you?",
+        "That feels less like chess and more like targeted messaging."
+      ],
+      "capture": [
+        "Evidence acquired. Your campaign is losing assets.",
+        "You made that look intentional. Suspicious."
+      ],
+      "check": [
+        "Found the flaw in your presentation layer!",
+        "Your king just failed a very public security audit."
+      ],
+      "win": [
+        "I finally solved your whole performance.",
+        "That was difficult, dramatic, and extremely informative."
+      ],
+      "lose": [
+        "I missed one variable: how much you enjoy being impossible.",
+        "Okay. Your model wins this round."
+      ],
+      "draw": [
+        "Unfinished puzzle. I am absolutely keeping the notes.",
+        "Neither of us cracked it. That is almost impressive."
+      ]
+    }
+  },
   "defaultExpression": "curious",
   "expressionMap": {
     "opening": "curious",
