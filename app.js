@@ -130,13 +130,14 @@ function dialogueFor(c,move){
  }
  const lines=c.dialogue[key]||c.dialogue.move;return {text:lines[Math.floor(seedRng()*lines.length)],key};
 }
-function afterMove(move){
+function afterMove(move,autoContinue=true){
  renderBoard([move.from,move.to]);appendMove(move);
  const actor=move.color==="w"?config.white:config.black, side=move.color==="w"?"left":"right";
  const d=dialogueFor(actor,move),exp=expressionFor(actor,d.key);
  setCharacter(side,actor,exp);speak(actor,d.text,side);
- if(game.isGameOver()){finish();return}
- scheduleAi();
+ if(game.isGameOver()){finish();updateMoveControls();return}
+ updateMoveControls();
+ if(autoContinue)scheduleAi();
 }
 function speak(c,text,side){
  $("#leftCard").classList.toggle("active",side==="left");
@@ -144,7 +145,7 @@ function speak(c,text,side){
  $(`#${side}Speech`).textContent=text;
 }
 function appendMove(m){
- const el=document.createElement("div");el.className="move";el.textContent=`${Math.ceil(game.history().length/2)}${m.color==="w"?"." : "..."} ${m.san}`;$("#moves").appendChild(el);$("#moves").scrollLeft=99999;
+ const el=document.createElement("div");el.className="move";el.textContent=`${Math.ceil(game.history().length/2)}${m.color==="w"?"." : "..."} ${m.san}`;$("#moves").appendChild(el);
 }
 function updateStatus(){
  $("#turnText").textContent=game.isGameOver()?"Game complete":`${game.turn()==="w"?config.white?.shortName||"White":config.black?.shortName||"Black"} to move`;
@@ -152,7 +153,47 @@ function updateStatus(){
  const ev=Math.max(-900,Math.min(900,evaluate())),left=50+ev/36;
  $("#momentumLeft").style.width=`${left}%`;$("#momentumRight").style.width=`${100-left}%`;
  $("#leftMeter").style.width=`${left}%`;$("#rightMeter").style.width=`${100-left}%`;
+ if(config.white&&config.black)updateMoveControls();
 }
+
+function delayLabel(ms){
+ return ms<1000?`${ms} ms`:`${(ms/1000).toFixed(1)} s`;
+}
+function updateDelayLabel(){
+ $("#delayValue").textContent=delayLabel(Number($("#delay").value));
+}
+function updateMoveControls(){
+ const hasHistory=game.history().length>0;
+ $("#lastMove").disabled=!hasHistory;
+ $("#nextMove").disabled=game.isGameOver()||sideMode(game.turn())!=="ai";
+}
+function pauseMatch(){
+ running=false;
+ clearTimeout(timer);
+ $("#play").textContent="▶ Run";
+}
+function playNextAiMove(){
+ if(game.isGameOver()||sideMode(game.turn())!=="ai")return;
+ pauseMatch();
+ const c=game.turn()==="w"?config.white:config.black;
+ const move=chooseMove(c);
+ if(move)afterMove(game.move(move),false);
+}
+function rewindOneMove(){
+ if(!game.history().length)return;
+ pauseMatch();
+ game.undo();
+ selected=null;
+ $("#moves").lastElementChild?.remove();
+ $("#leftCard").classList.remove("active");
+ $("#rightCard").classList.remove("active");
+ $("#leftSpeech").textContent="Waiting...";
+ $("#rightSpeech").textContent="Waiting...";
+ renderBoard();
+ $("#statusDetail").textContent="Rewound one move";
+ updateMoveControls();
+}
+
 function scheduleAi(){
  clearTimeout(timer);
  const mode=sideMode(game.turn());
@@ -183,17 +224,22 @@ function startGame(){
  setCharacter("right",config.black,config.black.defaultExpression||"neutral");
  speak(config.white,config.white.dialogue.opening[0],"left");
  $("#setupModal").hidden=true;createBoard();
+ updateMoveControls();
  if(config.whiteMode==="ai")scheduleAi();
 }
 $("#setupBtn").onclick=()=>{$("#setupModal").hidden=false};
 $("#cancelSetup").onclick=()=>{$("#setupModal").hidden=true};
 $("#startMatch").onclick=startGame;
 $("#swap").onclick=()=>{const a=$("#whiteCharacter").value;$("#whiteCharacter").value=$("#blackCharacter").value;$("#blackCharacter").value=a};
-$("#play").onclick=()=>{running=!running;running?scheduleAi():(clearTimeout(timer),$("#play").textContent="▶ Run")};
-$("#step").onclick=()=>{if(game.isGameOver())return;const mode=sideMode(game.turn());if(mode==="ai"){const c=game.turn()==="w"?config.white:config.black,m=chooseMove(c);if(m)afterMove(game.move(m))}};
-$("#newGame").onclick=()=>{$("#setupModal").hidden=false;running=false;clearTimeout(timer)};
+$("#play").onclick=()=>{running=!running;running?scheduleAi():pauseMatch()};
+$("#lastMove").onclick=rewindOneMove;
+$("#nextMove").onclick=playNextAiMove;
+$("#delay").oninput=updateDelayLabel;
+$("#newGame").onclick=()=>{$("#setupModal").hidden=false;pauseMatch()};
 try{
  await loadCharacters();
+ updateDelayLabel();
+ updateMoveControls();
  $("#setupModal").hidden=false;
 }catch(error){
  console.error(error);

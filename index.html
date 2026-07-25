@@ -15,7 +15,17 @@
   <div class="momentum"><span class="l" id="momentumLeft"></span><span class="r" id="momentumRight"></span></div>
   <div class="board" id="board"></div>
   <div class="status"><b id="turnText">Choose a match</b><span id="fenText">Move 1</span></div>
-  <div class="controls"><button class="primary" id="play">▶ Run</button><button id="step">Step AI</button><button id="newGame">New Match</button><select id="delay"><option value="1800">Cinematic</option><option value="950" selected>Normal</option><option value="350">Fast</option></select><button id="setupBtn2" onclick="document.querySelector('#setupModal').hidden=false">Setup</button></div>
+  <div class="controls">
+   <button class="primary" id="play">▶ Run</button>
+   <button id="lastMove">← Last Move</button>
+   <button id="nextMove">Next Move →</button>
+   <button id="newGame">New Match</button>
+   <label class="speed-control" for="delay">
+    <span>Reading speed</span>
+    <input id="delay" type="range" min="250" max="5000" step="50" value="950">
+    <output id="delayValue" for="delay">1.0 s</output>
+   </label>
+  </div>
  </div>
  </section>
 <section class="card character" id="rightCard" style="--accent:#ff4fa8;--accent2:#ffc15c">
@@ -30,6 +40,6 @@
  <div class="field"><label>Black character</label><select id="blackCharacter"></select></div>
  <div class="field"><label>Mode</label><select id="mode"><option value="ava">AI vs. AI</option><option value="hva">Human vs. AI</option><option value="hvh">Human vs. Human</option></select></div>
  <div class="field"><label>Match seed (optional)</label><input id="seed" placeholder="Leave blank for random"></div>
-</div><div class="hint">Character folders are discovered automatically during GitHub Pages deployment. Add or edit a character.json file, commit it, and the catalogue rebuilds itself.</div>
+</div><div class="hint">Add character JSON filenames to characters/characters.json. The same roster works on GitHub Pages and other static web hosts.</div>
 <div class="actions"><button id="swap">Swap sides</button><button id="cancelSetup">Cancel</button><button class="primary" id="startMatch">Start Match</button></div></div></div>
 <script type="module" src="app.js"></script></body></html>
