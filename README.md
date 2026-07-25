@@ -152,3 +152,46 @@ Otherwise, the character's normal personality dialogue is used.
 
 Starting a match or selecting **Rematch** now initializes the board in a paused
 state. Press **Run** when ready to begin automated play.
+
+
+## Phase 8 — Opening Identity
+
+Characters may define an optional `openingProfile` with separate White and Black
+repertoires:
+
+```json
+"openingProfile": {
+  "white": {
+    "freeformWeight": 55,
+    "lines": [
+      {
+        "name": "Réti Opening",
+        "moves": ["Nf3", "d5", "c4"],
+        "weight": 28
+      }
+    ]
+  },
+  "black": {
+    "freeformWeight": 55,
+    "lines": [
+      {
+        "name": "Modern Defense",
+        "moves": ["e4", "g6", "d4", "Bg7"],
+        "weight": 26
+      }
+    ]
+  }
+}
+```
+
+`moves` is a full SAN move sequence containing both players' moves from the
+starting position. A character follows the line only while the real match
+history remains an exact prefix and the next move is legal.
+
+`freeformWeight` participates in the same weighted choice as the listed
+openings. Selecting it skips the repertoire and immediately uses the normal
+personality move scorer. A larger value makes the character more willing to
+deviate from their familiar openings.
+
+When an opponent deviates from a selected line, that opening is abandoned for
+the rest of the current game and normal personality play takes over.

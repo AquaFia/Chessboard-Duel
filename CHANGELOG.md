@@ -1,5 +1,19 @@
 # Changelog
 
+## Phase 8 — Opening Identity
+
+- Added optional weighted opening repertoires for White and Black.
+- Added a weighted `freeformWeight` option for characters who may ignore their
+  usual repertoire.
+- Opening lines use full SAN histories and stop immediately after an opponent
+  deviation, an illegal next move, or the end of the line.
+- Normal personality scoring takes over cleanly after leaving theory.
+- Opening choices use the seeded RNG for reproducible simulations.
+- The match status identifies a character's active named opening.
+- Added opening profiles for Jace and Juno.
+- Added schema validation for opening profiles, weights, names, and SAN arrays.
+
+
 ## Manual simulation start
 
 - Starting a match no longer begins AI play automatically.
