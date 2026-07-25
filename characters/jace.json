@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "jace",
   "name": "Jacey “Jace” Cosmo",
   "shortName": "Jace",
@@ -19,23 +19,6 @@
     "shirt": "#8c1724",
     "eyes": "#8255ff",
     "accessory": "constellation"
-  },
-  "playstyle": {
-    "strength": 7,
-    "aggression": 0.72,
-    "tactics": 0.88,
-    "positional": 0.46,
-    "materialism": 0.42,
-    "kingSafety": 0.55,
-    "riskTolerance": 0.78,
-    "novelty": 0.84,
-    "randomness": 0.32,
-    "blunderChance": 0.035,
-    "preferredOpenings": [
-      "Vienna Game",
-      "King's Indian Attack",
-      "Sicilian Defense"
-    ]
   },
   "dialogue": {
     "opening": [
@@ -86,5 +69,82 @@
     "losing": "worried",
     "mate": "excited",
     "draw": "curious"
+  },
+  "personalityProfile": {
+    "corePersonality": {
+      "aggression": 42,
+      "riskTolerance": 88,
+      "patience": 46,
+      "creativity": 82,
+      "curiosity": 100,
+      "confidence": 76,
+      "emotionalStability": 74,
+      "adaptability": 78,
+      "persistence": 84,
+      "discipline": 48,
+      "bluffing": 31,
+      "empathy": 45,
+      "competitiveness": 58,
+      "caution": 22,
+      "independence": 86,
+      "leadership": 38,
+      "impulsiveness": 87,
+      "humor": 72
+    },
+    "chessAptitude": {
+      "patternRecognition": 98,
+      "strategicPlanning": 66,
+      "tacticalVision": 91,
+      "calculationPotential": 88,
+      "memory": 92,
+      "spatialReasoning": 79,
+      "longTermPlanning": 55,
+      "intuition": 83,
+      "learningSpeed": 95,
+      "focus": 68,
+      "pressureHandling": 76,
+      "adaptation": 84
+    },
+    "currentChessSkill": {
+      "estimatedElo": "1200-1400",
+      "openingKnowledge": 38,
+      "middlegameKnowledge": 67,
+      "endgameKnowledge": 42,
+      "timeManagement": 49,
+      "openingPreparation": 35,
+      "practicalAccuracy": 61
+    },
+    "playstyle": [
+      "Creative",
+      "Tactical",
+      "Chaotic",
+      "Trickster",
+      "Resourceful",
+      "Counterattacking",
+      "Psychological",
+      "Pragmatic"
+    ],
+    "openingPhilosophy": "Jace treats openings as experiments rather than memorized scripts. She learns principles quickly, then tests strange move orders, gambits, traps, and offbeat ideas to understand why they work or fail. She prefers openings that create asymmetry, hidden tactics, and immediate mysteries to decode, and she may deliberately investigate moves others call bad just to find the reason.",
+    "signatureBehaviors": [
+      "Treats every position like a cipher",
+      "Gets visibly excited when she spots a tactic",
+      "Says dangerous observations out loud",
+      "Creates complications to see what happens",
+      "Finds strange tactical resources from bad positions",
+      "Misses simple danger while noticing obscure patterns",
+      "Asks why after opening principles and opponent moves",
+      "Uses traps without thinking of them as deception",
+      "Almost never resigns early",
+      "Accidentally explains her own plan",
+      "Overvalues interesting moves when bored",
+      "Becomes much stronger in messy positions",
+      "Falls silent in cryptologist mode before sharp moves",
+      "Tests bad moves to understand why they are bad",
+      "Celebrates discovered attacks like actual discoveries"
+    ],
+    "dialogueStyle": "Jace speaks quickly, cheerfully, and often, using puzzle, clue, code, evidence, angle, and loophole vocabulary. She thinks aloud, reacts openly to captures and threats, compliments clever moves sincerely, and may accidentally reveal her own plans because she cannot keep secrets. Her tone is bright, curious, playful, and unnervingly observant, with sudden quiet focus when she enters cryptologist mode.",
+    "expressionStyle": "Her expressions move from wide curious openness to sharp pattern-focused stillness, then into bright starry-eyed discovery when she finds a tactic. She shows surprise with delayed processing, frustration through deadpan contradiction stares, anger mainly at false or unfair play, and defeat as a brief vulnerable 'oh' before curiosity returns.",
+    "engineNotes": "Prioritize tactical motifs, forcing moves, traps, and creative complications. Give her high strength in messy middlegames, strong adaptation after seeing a pattern, and occasional practical inaccuracies caused by curiosity, low caution, or overvaluing interesting moves. In winning positions, allow flashy but less efficient continuations; in losing positions, increase counterattack, perpetual check, stalemate, and trap-seeking behavior. Dialogue should be frequent unless she is calculating deeply, and emotional state should shift from cheerful curiosity to intense cryptologist focus whenever hidden patterns appear.",
+    "designerNotes": "Jace should not feel like a generic genius chess player. Her brilliance is real, especially tactically, but her current chess skill is limited by lack of formal experience, impulsiveness, low danger sense, and boredom with quiet positions. She is most authentic as a chaotic code-breaker opponent: terrifying when the board has secrets, unreliable when the best move is boring, and always driven by the need to find the clue."
   }
 }

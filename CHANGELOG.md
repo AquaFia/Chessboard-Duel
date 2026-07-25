@@ -1,5 +1,38 @@
 # Changelog
 
+## Phase 1 cleanup — Required personality profiles
+
+- Removed the obsolete top-level `playstyle` objects from Jace and Juno.
+- Removed all fallback brain generation and legacy character behavior.
+- Every roster character must now provide a complete `personalityProfile`.
+- Character files are validated when loaded, with a direct error naming the
+  missing profile section.
+- Removed the unused generated `adaptation` value.
+- Updated the README so it no longer describes backwards compatibility.
+
+
+## Phase 1 — Character Brains
+
+### Character files
+
+- Added the complete Notion personality export to Jace and Juno as
+  `personalityProfile`.
+- Increased their character schema version to 2.
+
+### `app.js`
+
+- Added `generateBrain()`, which converts the readable Notion profile into a
+  temporary in-memory chess personality.
+- Added Elo-based move consistency and candidate breadth.
+- Added personality preferences for tactics, aggression, material, king
+  safety, complexity, simplification, novelty, queen activity, and pressure.
+- Jace is now pulled toward tactical, unusual, complicated positions.
+- Juno is now pulled toward initiative, pressure, queen activity, traps, and
+  psychologically forcing positions.
+- No framework, build system, additional JavaScript file, or generated brain
+  file was added.
+
+
 ## Human turn selection fix
 
 ### Updated file
