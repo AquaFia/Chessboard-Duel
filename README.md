@@ -71,16 +71,22 @@ A missing or incomplete profile is treated as an error instead of being replaced
 with generic behavior.
 
 
-## Personality presence
+## Personality feedback
 
-Each character has five small mood entries: `calm`, `focused`, `confident`,
-`excited`, and `frustrated`. Each mood contains one expression and a short set
-of dialogue lines.
+Each character now keeps one temporary mood during a match. Mood is derived from
+the move event and the existing personality brain, then used to select portraits
+and dialogue.
 
-The game chooses a mood from the current board state after each move. Captures,
-checks, advantage, disadvantage, and complicated positions can change the mood.
-The same personality brain also adjusts AI thinking time slightly around the
-reading-speed slider.
+The mood list is intentionally small:
 
-There is no mood history, persistence, decay simulation, or separate mood
-engine. The current mood is a single temporary value.
+- focused
+- curious
+- confident
+- excited
+- pressured
+- frustrated
+- calm
+- triumphant
+
+No thinking-time system was added. The existing reading-speed control remains the
+only timing control.

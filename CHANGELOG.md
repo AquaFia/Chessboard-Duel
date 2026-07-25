@@ -1,18 +1,16 @@
 # Changelog
 
-## Phase 2 — Personality presence
+## Phase 2 — Lightweight personality feedback
 
-- Added five simple moods to every character: calm, focused, confident,
-  excited, and frustrated.
-- Mood now controls the active portrait expression and ordinary move dialogue.
-- Checks, captures, winning positions, losing positions, and complicated
-  boards cause visible mood changes.
-- AI thinking time now varies slightly with focus, impulsiveness, complexity,
-  and current mood while still respecting the reading-speed slider.
-- Split move evaluation into `analyzeMove()`, `chessScore()`, and
-  `personalityScore()` so chess rules and personality preferences are easier
-  to understand.
-- Added no persistence, mood history, decay system, new files, or frameworks.
+- Split move scoring into `chessScore()` and `personalityScore()`.
+- Added one temporary mood per character.
+- Mood reacts to openings, captures, checks, advantage, disadvantage, draws,
+  and checkmate.
+- The active character's dialogue and portrait now follow their mood.
+- The opponent's portrait reacts to captures and checks.
+- Added a brief mood message to the match status.
+- Did not add thinking speed or any second timing system.
+- Added no new files, dependencies, frameworks, or compatibility code.
 
 
 ## Phase 1 cleanup — Required personality profiles
