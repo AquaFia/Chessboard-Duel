@@ -100,8 +100,6 @@ button,select,input{font:inherit;color:inherit}.app{min-height:100vh;padding:10p
  line-height:1.15;
 }
 .result-copy small{color:#bdb4d0;font-size:.65rem}
-.result-actions{display:flex;gap:6px}
-.result-actions button{white-space:nowrap}
 @keyframes resultReveal{
  from{opacity:0;transform:translateY(-8px)}
  to{opacity:1;transform:translateY(0)}
@@ -207,8 +205,8 @@ button,select,input{font:inherit;color:inherit}.app{min-height:100vh;padding:10p
 }
 @media(max-width:600px){
  .result-banner{grid-template-columns:auto minmax(0,1fr);gap:9px;padding:10px}
- .result-actions{grid-column:1/-1}
- .result-actions button{flex:1}
+ 
+ 
 }
 @media(max-width:470px){.app{padding:6px}.portrait{height:105px}.character{display:block}.info{padding:7px}.meter-label,.meter{display:none}.grid{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr}.speed-control{grid-column:1/-1}}
 
