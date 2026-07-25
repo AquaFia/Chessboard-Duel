@@ -1,5 +1,26 @@
 # Changelog
 
+## Phase 4 — Post-match character reactions
+
+- Added winner, loser, and draw presentation states to character cards.
+- Winners now use checkmate dialogue and expressions.
+- Losers now use losing dialogue and expressions.
+- Draws now give both characters their draw reactions.
+- Added a visible winner badge and subtle loser dimming.
+- Rewinding the final move restores the normal review state.
+- Added no new character fields, dependencies, or timing systems.
+
+
+## Phase 3 — Match result banner
+
+- Added a prominent result banner above the board.
+- Checkmate results display the winner's name, side, theme colors, and move count.
+- Draw results display a neutral banner and the detected draw reason.
+- Added `Review Game` and `New Match` actions.
+- The banner automatically clears when starting or rewinding a match.
+- Added no new dependencies or compatibility systems.
+
+
 ## Phase 2 — Lightweight personality feedback
 
 - Split move scoring into `chessScore()` and `personalityScore()`.

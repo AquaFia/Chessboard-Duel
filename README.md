@@ -90,3 +90,26 @@ The mood list is intentionally small:
 
 No thinking-time system was added. The existing reading-speed control remains the
 only timing control.
+
+
+## Match results
+
+Completed games display a themed result banner above the board. A decisive result
+uses the winner's character colors and states the winner, side, result, and move
+count. Draws use a neutral theme and show the detected draw reason when chess.js
+provides one.
+
+`Review Game` hides the banner without changing the position. `New Match` opens
+match setup.
+
+
+## Post-match reactions
+
+When a game ends, both character cards react:
+
+- The winner uses their checkmate expression and dialogue, remains highlighted,
+  and receives a visible `WINNER` badge.
+- The loser uses their losing expression and dialogue and is visually subdued.
+- In a draw, both characters use their draw expression and dialogue.
+- Rewinding the final move clears the outcome styling and restores the normal
+  review state.
