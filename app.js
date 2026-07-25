@@ -336,8 +336,33 @@ function speak(c,text,side){
  $("#rightCard").classList.toggle("active",side==="right");
  $(`#${side}Speech`).textContent=text;
 }
+function moveKind(move){
+ if(move.san.endsWith("#"))return {type:"mate",icon:"♔",label:"Checkmate"};
+ if(move.san.includes("+"))return {type:"check",icon:"⚡",label:"Check"};
+ if(move.san.includes("O-O"))return {type:"castle",icon:"♜",label:"Castle"};
+ if(move.promotion)return {type:"promotion",icon:"◆",label:"Promotion"};
+ if(move.captured)return {type:"capture",icon:"⚔",label:"Capture"};
+ return {type:"normal",icon:"",label:"Move"};
+}
+function clearMovePreview(){
+ $$(".sq").forEach(square=>square.classList.remove("preview-from","preview-to"));
+}
+function previewMove(move){
+ clearMovePreview();
+ document.querySelector(`[data-square="${move.from}"]`)?.classList.add("preview-from");
+ document.querySelector(`[data-square="${move.to}"]`)?.classList.add("preview-to");
+}
 function appendMove(m){
- const el=document.createElement("div");el.className="move";el.textContent=`${Math.ceil(game.history().length/2)}${m.color==="w"?"." : "..."} ${m.san}`;$("#moves").appendChild(el);
+ const kind=moveKind(m);
+ const el=document.createElement("div");
+ el.className=`move ${kind.type}`;
+ el.dataset.from=m.from;
+ el.dataset.to=m.to;
+ el.title=`${m.from} → ${m.to} • ${kind.label}`;
+ el.innerHTML=`${kind.icon?`<span class="move-icon" aria-hidden="true">${kind.icon}</span>`:""}${Math.ceil(game.history().length/2)}${m.color==="w"?"." : "..."} ${m.san}`;
+ el.addEventListener("mouseenter",()=>previewMove(m));
+ el.addEventListener("mouseleave",clearMovePreview);
+ $("#moves").appendChild(el);
 }
 function updateStatus(){
  $("#turnText").textContent=game.isGameOver()?"Game complete":`${game.turn()==="w"?config.white?.shortName||"White":config.black?.shortName||"Black"} to move`;
@@ -375,6 +400,7 @@ function rewindOneMove(){
  if(!game.history().length)return;
  pauseMatch();
  hideResult();
+ clearMovePreview();
  clearOutcomeState();
  game.undo();
  selected=null;
@@ -451,6 +477,85 @@ function drawReason(){
 function hideResult(){
  $("#resultBanner").hidden=true;
 }
+function matchAnalysis(){
+ const history=game.history({verbose:true});
+ const captures=history.filter(move=>move.captured).length;
+ const checks=history.filter(move=>move.san.includes("+")||move.san.endsWith("#")).length;
+ const castles=history.filter(move=>move.san.includes("O-O"));
+ const promotions=history.filter(move=>move.promotion).length;
+ const queenMoves=history.filter(move=>move.piece==="q").length;
+ const fullMoves=Math.ceil(history.length/2);
+
+ const castleColors=[...new Set(castles.map(move=>move.color))];
+ const castleText=castleColors.length===2?"Both":castleColors[0]==="w"?"White":castleColors[0]==="b"?"Black":"None";
+
+ let nickname="Methodical Match";
+ const captureRate=history.length?captures/history.length:0;
+ if(checks>=7||captureRate>=.42)nickname="Tactical Duel";
+ else if(captures>=12)nickname="Aggressive Match";
+ else if(fullMoves>=45&&captures<=10)nickname="Patient Endgame";
+ else if(queenMoves>=12)nickname="Queen-Led Battle";
+ else if(castles.length===2&&captures<=8)nickname="Positional Contest";
+
+ return {history,captures,checks,castleText,promotions,fullMoves,nickname};
+}
+function signatureScore(move,character,index){
+ const brain=brainFor(character);
+ let score=0;
+ if(move.captured)score+=35+60*brain.aggression+(value[move.captured]||0)*.08;
+ if(move.san.includes("+"))score+=45+80*brain.tactics+55*brain.pressure;
+ if(move.san.endsWith("#"))score+=500;
+ if(move.san.includes("O-O"))score+=50+90*brain.kingSafety;
+ if(move.promotion)score+=150;
+ if(["c4","c5","d4","d5","e4","e5","f4","f5"].includes(move.to))score+=35*brain.positional;
+ if(move.piece==="q")score+=25*brain.queenPreference;
+ score+=index*.12;
+ return score;
+}
+function signatureDescription(move,character){
+ const name=character.shortName||character.name;
+ if(move.san.endsWith("#"))return `${name} delivered the finishing blow.`;
+ if(move.promotion)return `${name} converted a pawn into decisive power.`;
+ if(move.san.includes("+")&&move.captured)return `${name} combined a capture with direct pressure on the king.`;
+ if(move.san.includes("+"))return `${name} seized the initiative with check.`;
+ if(move.captured)return `${name} chose a forceful exchange that matched their style.`;
+ if(move.san.includes("O-O"))return `${name} committed to king safety and structure.`;
+ return `${name} chose the move that most closely matched their playing personality.`;
+}
+function winnerSignature(analysis){
+ if(!game.isCheckmate())return null;
+ const winnerColor=game.turn()==="w"?"b":"w";
+ const winner=winnerColor==="w"?config.white:config.black;
+ const candidates=analysis.history
+  .map((move,index)=>({move,index}))
+  .filter(item=>item.move.color===winnerColor);
+ if(!candidates.length)return null;
+ const best=candidates.sort((a,b)=>
+  signatureScore(b.move,winner,b.index)-signatureScore(a.move,winner,a.index)
+ )[0];
+ return {
+  notation:`${Math.ceil((best.index+1)/2)}${best.move.color==="w"?".":"..."} ${best.move.san}`,
+  text:signatureDescription(best.move,winner)
+ };
+}
+function renderMatchReview(){
+ const analysis=matchAnalysis();
+ $("#matchNickname").textContent=analysis.nickname;
+ $("#resultStats").innerHTML=[
+  ["Moves",analysis.fullMoves],
+  ["Captures",analysis.captures],
+  ["Checks",analysis.checks],
+  ["Castled",analysis.castleText],
+  ["Promotions",analysis.promotions]
+ ].map(([label,value])=>`<div class="result-stat"><strong>${value}</strong><span>${label}</span></div>`).join("");
+
+ const signature=winnerSignature(analysis);
+ $("#signatureMove").hidden=!signature;
+ if(signature){
+  $("#signatureNotation").textContent=signature.notation;
+  $("#signatureText").textContent=signature.text;
+ }
+}
 function showResult(){
  const banner=$("#resultBanner");
  const moveCount=game.history().length;
@@ -474,6 +579,7 @@ function showResult(){
   $("#resultSummary").textContent=`${drawReason()} • ${fullMoves} ${fullMoves===1?"move":"moves"}`;
  }
 
+ renderMatchReview();
  banner.hidden=false;
 }
 
@@ -486,6 +592,7 @@ function finish(){
 }
 function startGame(){
  hideResult();
+ clearMovePreview();
  clearOutcomeState();
  catalog.forEach(character=>{delete character._brain;delete character._mood});
  config={

@@ -1,5 +1,16 @@
 # Changelog
 
+## Phase 5 — Match review
+
+- Enhanced the move timeline with icons and restrained styling for captures,
+  checks, castling, promotions, and checkmate.
+- Added hover previews that highlight each move's origin and destination squares.
+- Added an end-of-game statistical summary.
+- Added lightweight match nicknames derived from the game's activity.
+- Added a personality-weighted signature move for decisive winners.
+- Added no database, persistent memory, dependencies, or deeper engine analysis.
+
+
 ## Phase 4 — Post-match character reactions
 
 - Added winner, loser, and draw presentation states to character cards.

@@ -113,3 +113,19 @@ When a game ends, both character cards react:
 - In a draw, both characters use their draw expression and dialogue.
 - Rewinding the final move clears the outcome styling and restores the normal
   review state.
+
+
+## Match review
+
+The move timeline now distinguishes captures, checks, castling, promotions, and
+checkmate with small icons and restrained accent styling. Hovering a move
+highlights its origin and destination squares on the board.
+
+At game end, the result banner also computes:
+
+- a lightweight match nickname
+- move, capture, check, castling, and promotion totals
+- a signature move for the winner, selected using the winner's personality
+  profile and the actual moves played
+
+All review information is derived in memory from the current game's move history.
