@@ -195,3 +195,41 @@ deviate from their familiar openings.
 
 When an opponent deviates from a selected line, that opening is abandoned for
 the rest of the current game and normal personality play takes over.
+
+
+## Phase 9 — Adaptive Character Memory
+
+Every match now creates temporary memory for both sides. It is reset when a new
+match or rematch begins and is never saved permanently.
+
+The runtime tracks:
+
+- checks recently received
+- captures and material swings
+- repeated movement of the same piece on consecutive turns
+- departure from a selected opening line
+- unsuccessful checking attempts
+- opportunities to retaliate after losing material
+
+Move selection now uses:
+
+```text
+chess score + personality score + memory score
+```
+
+The memory modifier is deliberately smaller than tactical necessities. It
+nudges behavior rather than replacing the existing chess and personality
+systems.
+
+Optional contextual dialogue events are:
+
+```text
+opponentRepeating
+underPressure
+openingDeviation
+failedPlan
+retaliation
+```
+
+Relationship-specific dialogue may override these events in the same way as
+other dialogue. When no contextual line exists, the normal move event is used.

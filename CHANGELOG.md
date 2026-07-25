@@ -1,5 +1,18 @@
 # Changelog
 
+## Phase 9 — Adaptive Character Memory
+
+- Added temporary per-match memory for both characters.
+- Characters react to recent checks, captures, material swings, repeated piece
+  movement, opening deviations, failed checking attempts, and retaliation
+  opportunities.
+- Added a bounded memory modifier to AI move scoring.
+- Added contextual dialogue events with normal and relationship fallbacks.
+- Added contextual lines for Jace and Juno.
+- Match memory resets on start and rematch.
+- Rewinding reconstructs memory from the remaining move history.
+
+
 ## Phase 8 — Opening Identity
 
 - Added optional weighted opening repertoires for White and Black.

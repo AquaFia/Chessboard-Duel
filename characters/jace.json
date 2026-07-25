@@ -56,6 +56,26 @@
     "draw": [
       "Mutual encryption failure?",
       "We appear to have produced a paradox."
+    ],
+    "opponentRepeating": [
+      "You moved that piece again. That is officially a pattern.",
+      "Same piece, new square. I am logging the route."
+    ],
+    "underPressure": [
+      "Okay, repeated checks are becoming a very loud clue.",
+      "You keep probing the same vulnerability. Noted."
+    ],
+    "openingDeviation": [
+      "Oh, we are leaving the known map already? Excellent.",
+      "Theory just ended. Now the interesting part starts."
+    ],
+    "failedPlan": [
+      "That tactic did not decode correctly. Revising.",
+      "Bad hypothesis. Useful failure."
+    ],
+    "retaliation": [
+      "Evidence recovered.",
+      "You took something, so I traced the exchange."
     ]
   },
   "relationships": {
