@@ -89,11 +89,40 @@ function renderBoard(last=[]){
 function sideMode(color){return color==="w"?config.whiteMode:config.blackMode}
 function humanClick(sq){
  if(running||game.isGameOver()||sideMode(game.turn())!=="human")return;
- if(selected){
-  const move=game.move({from:selected,to:sq,promotion:"q"});selected=null;
-  if(move){afterMove(move);return}
+
+ const piece=game.get(sq);
+ const turn=game.turn();
+
+ // Select one of the current player's pieces.
+ if(!selected){
+  selected=piece&&piece.color===turn?sq:null;
+  renderBoard();
+  return;
  }
- const p=game.get(sq);selected=p&&p.color===game.turn()?sq:null;renderBoard();
+
+ // Clicking the selected piece again cancels the selection.
+ if(sq===selected){
+  selected=null;
+  renderBoard();
+  return;
+ }
+
+ // Clicking another friendly piece switches selection immediately.
+ if(piece&&piece.color===turn){
+  selected=sq;
+  renderBoard();
+  return;
+ }
+
+ // Otherwise, attempt the move. Illegal destinations keep the current
+ // piece selected so the player can try another square or switch pieces.
+ const move=game.move({from:selected,to:sq,promotion:"q"});
+ if(move){
+  selected=null;
+  afterMove(move);
+ }else{
+  renderBoard();
+ }
 }
 function evaluate(){
  let s=0;

@@ -1,5 +1,16 @@
 # Changelog
 
+## Human turn selection fix
+
+### Updated file
+
+- `app.js`
+  - Human players can switch freely between their own pieces before moving.
+  - Clicking the selected piece again cancels the selection.
+  - Clicking an illegal destination keeps the piece selected instead of locking the turn.
+  - All legal movement and turn rules remain enforced by the chess engine.
+
+
 ## New Match restart behavior
 
 ### Updated file
