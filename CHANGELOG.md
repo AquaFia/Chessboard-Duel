@@ -1,5 +1,13 @@
 # Changelog
 
+## End-of-game banner cleanup
+
+- Removed the unused **Review Game** button.
+- Changed the banner's **New Match** button to immediately restart using the
+  current characters, mode, seed, and reading-speed settings.
+- The match setup window now opens only from the dedicated **Match Setup** button.
+
+
 ## Phase 5 — Match review
 
 - Enhanced the move timeline with icons and restrained styling for captures,
