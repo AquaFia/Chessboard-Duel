@@ -632,8 +632,9 @@ function startGame(){
  $("#leftCard").classList.add("active");
  $("#rightCard").classList.add("active");
  $("#setupModal").hidden=true;createBoard();
+ running=false;
+ $("#play").textContent="▶ Run";
  updateMoveControls();
- if(config.whiteMode==="ai")scheduleAi();
 }
 $("#setupBtn").onclick=()=>{$("#setupModal").hidden=false};
 $("#cancelSetup").onclick=()=>{$("#setupModal").hidden=true};

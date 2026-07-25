@@ -146,3 +146,9 @@ the opponent character ID. Supported chemistry events are `opening`, `move`,
 
 When a relationship line exists for the current opponent and event, it is used.
 Otherwise, the character's normal personality dialogue is used.
+
+
+## Manual simulation start
+
+Starting a match or selecting **Rematch** now initializes the board in a paused
+state. Press **Run** when ready to begin automated play.

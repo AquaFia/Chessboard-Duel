@@ -1,5 +1,13 @@
 # Changelog
 
+## Manual simulation start
+
+- Starting a match no longer begins AI play automatically.
+- Rematches also initialize in a paused state.
+- The **Run** button must be pressed manually to start the simulation.
+- Removed the automatic scheduling call rather than retaining a disabled path.
+
+
 ## Phase 7 — Character Chemistry
 
 - Added optional pair-specific relationship dialogue to character JSON.
