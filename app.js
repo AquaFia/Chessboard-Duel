@@ -4,7 +4,7 @@ import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm";
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const glyph={w:{k:"♔",q:"♕",r:"♖",b:"♗",n:"♘",p:"♙"},b:{k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟"}};
 const value={p:100,n:320,b:330,r:500,q:900,k:0};
-let catalog=[], chars={}, game=new Chess(), config={}, selected=null, running=false, timer=null, seedRng=Math.random, openingStates={w:null,b:null};
+let catalog=[], chars={}, game=new Chess(), config={}, selected=null, running=false, timer=null, seedRng=Math.random, openingStates={w:null,b:null}, matchMemory={w:null,b:null};
 
 async function loadCharacters(){
  const response=await fetch("characters/characters.json",{cache:"no-store"});
@@ -229,6 +229,111 @@ function generateBrain(c){
 function brainFor(c){
  return c._brain||(c._brain=generateBrain(c));
 }
+function freshMemory(){
+ return {
+  checksAgainst:0,
+  recentChecksAgainst:0,
+  capturesAgainst:0,
+  materialSwing:0,
+  opponentRepeatStreak:0,
+  opponentRepeatedSquare:null,
+  lastMovedTo:null,
+  openingDeviation:false,
+  openingDeviationAnnounced:false,
+  failedTactics:0,
+  failedPlanPending:false,
+  retaliationReady:false,
+  contextualEvent:null
+ };
+}
+function memoryForColor(color){
+ return matchMemory[color]||(matchMemory[color]=freshMemory());
+}
+function characterColor(character){
+ return character===config.white?"w":"b";
+}
+function memoryScore(move,character,position){
+ const color=characterColor(character);
+ const memory=memoryForColor(color);
+ const brain=brainFor(character);
+ const core=character.personalityProfile.corePersonality;
+ const discipline=pct(core.discipline);
+ let score=0;
+
+ if(memory.recentChecksAgainst){
+  if(move.san.includes("O-O"))score+=24+55*brain.kingSafety;
+  if(position.check)score+=memory.recentChecksAgainst*(10+28*brain.aggression);
+  if(move.piece==="q"&&!move.captured)score-=memory.recentChecksAgainst*16*brain.kingSafety;
+ }
+ if(memory.materialSwing<0){
+  if(move.captured)score+=Math.min(70,-memory.materialSwing*.08)*(0.35+brain.aggression);
+  if(position.check)score+=18*brain.pressure;
+ }
+ if(memory.opponentRepeatedSquare&&move.to===memory.opponentRepeatedSquare){
+  score+=25+55*brain.pressure;
+ }
+ if(memory.openingDeviation){
+  const complexity=Math.min(1,(position.replyCount+position.forcingReplies*2)/38);
+  score+=(complexity-.35)*45*brain.novelty;
+ }
+ if(memory.failedTactics){
+  const forcing=Boolean(move.captured||position.check);
+  score+=forcing
+   ?-Math.min(50,memory.failedTactics*14)*discipline
+   :Math.min(25,memory.failedTactics*7)*discipline;
+ }
+ return score;
+}
+function updateMatchMemory(move,beforeEval,afterEval){
+ const actorColor=move.color;
+ const opponentColor=actorColor==="w"?"b":"w";
+ const actor=memoryForColor(actorColor);
+ const opponent=memoryForColor(opponentColor);
+ const actorDelta=(actorColor==="w"?afterEval-beforeEval:beforeEval-afterEval);
+
+ actor.materialSwing+=actorDelta;
+ opponent.materialSwing-=actorDelta;
+
+ if(move.captured){
+  opponent.capturesAgainst++;
+  opponent.retaliationReady=true;
+  actor.failedPlanPending=false;
+ }
+ if(game.inCheck()){
+  opponent.checksAgainst++;
+  opponent.recentChecksAgainst=Math.min(3,opponent.recentChecksAgainst+1);
+  actor.failedPlanPending=!move.captured&&!game.isCheckmate();
+ }else{
+  actor.recentChecksAgainst=Math.max(0,actor.recentChecksAgainst-1);
+ }
+
+ if(actor.lastMovedTo&&move.from===actor.lastMovedTo){
+  actor.opponentRepeatStreak++;
+ }else{
+  actor.opponentRepeatStreak=1;
+ }
+ actor.lastMovedTo=move.to;
+
+ opponent.opponentRepeatStreak=actor.opponentRepeatStreak;
+ opponent.opponentRepeatedSquare=actor.opponentRepeatStreak>=2?move.to:null;
+
+ if(opponent.failedPlanPending&&!move.captured&&!game.inCheck()){
+  opponent.failedTactics++;
+  opponent.failedPlanPending=false;
+  opponent.contextualEvent="failedPlan";
+ }
+ if(actor.retaliationReady&&move.captured){
+  actor.contextualEvent="retaliation";
+  actor.retaliationReady=false;
+ }else if(actor.recentChecksAgainst>=2){
+  actor.contextualEvent="underPressure";
+ }else if(actor.openingDeviation&&!actor.openingDeviationAnnounced){
+  actor.contextualEvent="openingDeviation";
+  actor.openingDeviationAnnounced=true;
+ }else if(actor.opponentRepeatStreak>=2){
+  opponent.contextualEvent="opponentRepeating";
+ }
+}
 function chessScore(move){
  const before=evaluate(),actor=move.color;
  game.move(move);
@@ -281,7 +386,8 @@ function personalityScore(move,c,position){
  return score;
 }
 function moveScore(move,c){
- return personalityScore(move,c,chessScore(move));
+ const position=chessScore(move);
+ return personalityScore(move,c,position)+memoryScore(move,c,position);
 }
 function weightedOpeningChoice(options,freeformWeight){
  const total=options.reduce((sum,line)=>sum+line.weight,0)+freeformWeight;
@@ -323,6 +429,7 @@ function openingMove(character){
  }
  if(!history.every((san,index)=>state.moves[index]===san)){
   state.active=false;
+  memoryForColor(color).openingDeviation=true;
   return null;
  }
 
@@ -330,6 +437,7 @@ function openingMove(character){
  const legal=game.moves({verbose:true}).find(move=>move.san===expectedSan);
  if(!legal){
   state.active=false;
+  memoryForColor(color).openingDeviation=true;
   return null;
  }
 
@@ -413,7 +521,21 @@ function dialogueFor(character,opponent,event,mood){
  const standardLines=character.dialogue[mood]||character.dialogue[event]||character.dialogue.move;
  return chooseLine(standardLines);
 }
+function contextualDialogueEvent(character,fallbackEvent){
+ const memory=memoryForColor(characterColor(character));
+ const contextual=memory.contextualEvent;
+ memory.contextualEvent=null;
+ if(!contextual)return fallbackEvent;
+ const hasRelationship=character.relationships?.[character===config.white?config.black.id:config.white.id]?.[contextual];
+ const hasStandard=character.dialogue?.[contextual];
+ return hasRelationship||hasStandard?contextual:fallbackEvent;
+}
 function afterMove(move,autoContinue=true){
+ const afterEval=evaluate();
+ game.undo();
+ const beforeEval=evaluate();
+ game.move(move);
+ updateMatchMemory(move,beforeEval,afterEval);
  renderBoard([move.from,move.to]);appendMove(move);
  const actor=move.color==="w"?config.white:config.black;
  const opponent=move.color==="w"?config.black:config.white;
@@ -428,7 +550,8 @@ function afterMove(move,autoContinue=true){
 
  setCharacter(side,actor,expressionForMood(actor,mood,event));
  setCharacter(opponentSide,opponent,expressionForMood(opponent,opponentMood,"move"));
- speak(actor,dialogueFor(actor,opponent,event,mood),side);
+ const dialogueEvent=contextualDialogueEvent(actor,event);
+ speak(actor,dialogueFor(actor,opponent,dialogueEvent,mood),side);
  $("#statusDetail").textContent=actor._usedOpeningMove
   ?`${actor.shortName||actor.name} follows ${actor._openingName}.`
   :`${actor.shortName||actor.name} is ${mood}.`;
@@ -502,6 +625,20 @@ function playNextAiMove(){
  const move=chooseMove(c);
  if(move)afterMove(game.move(move),false);
 }
+function rebuildMatchMemory(){
+ const history=game.history({verbose:true});
+ matchMemory={w:freshMemory(),b:freshMemory()};
+ const replay=new Chess();
+ for(const recorded of history){
+  const before=[...replay.board()].flat().reduce((sum,p)=>sum+(p?(p.color==="w"?1:-1)*value[p.type]:0),0);
+  const made=replay.move(recorded);
+  const after=[...replay.board()].flat().reduce((sum,p)=>sum+(p?(p.color==="w"?1:-1)*value[p.type]:0),0);
+  const liveGame=game;
+  game=replay;
+  updateMatchMemory(made,before,after);
+  game=liveGame;
+ }
+}
 function rewindOneMove(){
  if(!game.history().length)return;
  pauseMatch();
@@ -509,6 +646,7 @@ function rewindOneMove(){
  clearMovePreview();
  clearOutcomeState();
  game.undo();
+ rebuildMatchMemory();
  openingStates={w:null,b:null};
  delete config.white._openingName;
  delete config.black._openingName;
@@ -707,6 +845,7 @@ function startGame(){
  clearMovePreview();
  clearOutcomeState();
  openingStates={w:null,b:null};
+ matchMemory={w:freshMemory(),b:freshMemory()};
  catalog.forEach(character=>{
   delete character._brain;
   delete character._mood;

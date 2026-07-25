@@ -54,6 +54,26 @@
     "draw": [
       "A statistically unsatisfying equilibrium.",
       "Neither model achieved dominance."
+    ],
+    "opponentRepeating": [
+      "You keep moving that piece. Repetition creates a narrative.",
+      "That piece is receiving suspiciously high visibility."
+    ],
+    "underPressure": [
+      "Repeated pressure is not the same as control.",
+      "Yes, I see the campaign. I am adjusting."
+    ],
+    "openingDeviation": [
+      "We are off-script. Fine—I improvise better anyway.",
+      "Theory has left the room. Presentation still matters."
+    ],
+    "failedPlan": [
+      "That initiative tested poorly. Reframing.",
+      "One failed tactic is merely an inconvenient data point."
+    ],
+    "retaliation": [
+      "And now the exchange is balanced.",
+      "Immediate response. Better optics."
     ]
   },
   "relationships": {
