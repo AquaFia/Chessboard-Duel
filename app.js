@@ -375,13 +375,22 @@ function rewindOneMove(){
  if(!game.history().length)return;
  pauseMatch();
  hideResult();
+ clearOutcomeState();
  game.undo();
  selected=null;
  $("#moves").lastElementChild?.remove();
  $("#leftCard").classList.remove("active");
  $("#rightCard").classList.remove("active");
- $("#leftSpeech").textContent="Waiting...";
- $("#rightSpeech").textContent="Waiting...";
+
+ const whiteMood=moodFor(config.white,"move");
+ const blackMood=moodFor(config.black,"move");
+ config.white._mood=whiteMood;
+ config.black._mood=blackMood;
+ setCharacter("left",config.white,expressionForMood(config.white,whiteMood,"move"));
+ setCharacter("right",config.black,expressionForMood(config.black,blackMood,"move"));
+ $("#leftSpeech").textContent="Reviewing the position...";
+ $("#rightSpeech").textContent="Reviewing the position...";
+
  renderBoard();
  $("#statusDetail").textContent="Rewound one move";
  updateMoveControls();
@@ -397,6 +406,41 @@ function scheduleAi(){
   const c=game.turn()==="w"?config.white:config.black,m=chooseMove(c);
   if(m){const made=game.move(m);afterMove(made)}
  },Number($("#delay").value));
+}
+function clearOutcomeState(){
+ ["leftCard","rightCard"].forEach(id=>{
+  const card=$("#"+id);
+  card.classList.remove("winner","loser","drawn");
+ });
+}
+function setPostMatchLine(side,character,event){
+ const mood=event==="mate"?"triumphant":event==="draw"?"calm":"frustrated";
+ character._mood=mood;
+ setCharacter(side,character,expressionForMood(character,mood,event));
+ $(`#${side}Speech`).textContent=dialogueFor(character,event,mood);
+}
+function showPostMatchReactions(){
+ clearOutcomeState();
+
+ if(game.isCheckmate()){
+  const whiteWon=game.turn()==="b";
+  const winner=whiteWon?config.white:config.black;
+  const loser=whiteWon?config.black:config.white;
+  const winnerSide=whiteWon?"left":"right";
+  const loserSide=whiteWon?"right":"left";
+
+  setPostMatchLine(winnerSide,winner,"mate");
+  setPostMatchLine(loserSide,loser,"losing");
+  $(`#${winnerSide}Card`).classList.add("winner","active");
+  $(`#${loserSide}Card`).classList.add("loser");
+  $(`#${loserSide}Card`).classList.remove("active");
+  return;
+ }
+
+ setPostMatchLine("left",config.white,"draw");
+ setPostMatchLine("right",config.black,"draw");
+ $("#leftCard").classList.add("drawn","active");
+ $("#rightCard").classList.add("drawn","active");
 }
 function drawReason(){
  if(game.isStalemate?.())return "Stalemate";
@@ -437,10 +481,12 @@ function finish(){
  running=false;$("#play").textContent="▶ Run";
  let text=game.isCheckmate()?`${game.turn()==="w"?config.black.shortName:config.white.shortName} wins by checkmate.`:`The game ends in a ${drawReason().toLowerCase()}.`;
  $("#statusDetail").textContent=text;
+ showPostMatchReactions();
  showResult();
 }
 function startGame(){
  hideResult();
+ clearOutcomeState();
  catalog.forEach(character=>{delete character._brain;delete character._mood});
  config={
   white:chars[$("#whiteCharacter").value],black:chars[$("#blackCharacter").value],

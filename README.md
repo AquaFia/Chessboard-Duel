@@ -101,3 +101,15 @@ provides one.
 
 `Review Game` hides the banner without changing the position. `New Match` opens
 match setup.
+
+
+## Post-match reactions
+
+When a game ends, both character cards react:
+
+- The winner uses their checkmate expression and dialogue, remains highlighted,
+  and receives a visible `WINNER` badge.
+- The loser uses their losing expression and dialogue and is visually subdued.
+- In a draw, both characters use their draw expression and dialogue.
+- Rewinding the final move clears the outcome styling and restores the normal
+  review state.
