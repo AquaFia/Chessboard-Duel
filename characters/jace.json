@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "id": "jace",
+  "name": "Jacey “Jace” Cosmo",
+  "shortName": "Jace",
+  "talent": "Ultimate Cryptologist",
+  "theme": {
+    "primary": "#806cff",
+    "secondary": "#38b8ff",
+    "panel": "#17132d"
+  },
+  "portraits": {
+    "curious": "assets/jace-curious.webp"
+  },
+  "fallbackPortrait": {
+    "hairTop": "#6f45b8",
+    "hairBottom": "#142d7a",
+    "skin": "#f1d5d6",
+    "shirt": "#8c1724",
+    "eyes": "#8255ff",
+    "accessory": "constellation"
+  },
+  "playstyle": {
+    "strength": 7,
+    "aggression": 0.72,
+    "tactics": 0.88,
+    "positional": 0.46,
+    "materialism": 0.42,
+    "kingSafety": 0.55,
+    "riskTolerance": 0.78,
+    "novelty": 0.84,
+    "randomness": 0.32,
+    "blunderChance": 0.035,
+    "preferredOpenings": [
+      "Vienna Game",
+      "King's Indian Attack",
+      "Sicilian Defense"
+    ]
+  },
+  "dialogue": {
+    "opening": [
+      "Every opening is basically a cipher key.",
+      "Okay, show me the pattern you’re hiding."
+    ],
+    "move": [
+      "That changes the key. Interesting.",
+      "I’m testing a hypothesis."
+    ],
+    "capture": [
+      "Evidence acquired!",
+      "That piece was behaving suspiciously."
+    ],
+    "check": [
+      "Found the vulnerability!",
+      "Your king has a security problem."
+    ],
+    "checked": [
+      "Oh. That is a very loud clue.",
+      "Okay, new hypothesis."
+    ],
+    "winning": [
+      "I think the position is starting to confess.",
+      "There it is—the repeating pattern!"
+    ],
+    "losing": [
+      "This puzzle is being extremely rude.",
+      "Bad result. Excellent data."
+    ],
+    "mate": [
+      "Solved it!",
+      "Final answer locked in."
+    ],
+    "draw": [
+      "Mutual encryption failure?",
+      "We appear to have produced a paradox."
+    ]
+  },
+  "defaultExpression": "curious",
+  "expressionMap": {
+    "opening": "curious",
+    "move": "curious",
+    "capture": "excited",
+    "check": "excited",
+    "checked": "surprised",
+    "winning": "knowing",
+    "losing": "worried",
+    "mate": "excited",
+    "draw": "curious"
+  }
+}

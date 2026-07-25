@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "id": "juno",
+  "name": "Juno Enyo",
+  "shortName": "Juno",
+  "talent": "Ultimate Data Analyst",
+  "theme": {
+    "primary": "#ff4fa8",
+    "secondary": "#ffc15c",
+    "panel": "#2a1121"
+  },
+  "portraits": {},
+  "fallbackPortrait": {
+    "hairTop": "#ff72b6",
+    "hairBottom": "#a51e65",
+    "skin": "#f2d1d5",
+    "shirt": "#46162f",
+    "eyes": "#451d39",
+    "accessory": "sparkle"
+  },
+  "playstyle": {
+    "strength": 8,
+    "aggression": 0.48,
+    "tactics": 0.61,
+    "positional": 0.91,
+    "materialism": 0.72,
+    "kingSafety": 0.85,
+    "riskTolerance": 0.31,
+    "novelty": 0.39,
+    "randomness": 0.18,
+    "blunderChance": 0.018,
+    "preferredOpenings": [
+      "Queen's Gambit",
+      "Caro-Kann Defense",
+      "English Opening"
+    ]
+  },
+  "dialogue": {
+    "opening": [
+      "Let’s establish control before anyone invents a narrative.",
+      "The first move sets audience expectations."
+    ],
+    "move": [
+      "That improves the position and the optics.",
+      "Predictable does not mean ineffective."
+    ],
+    "capture": [
+      "Removed from the dataset.",
+      "A clean conversion."
+    ],
+    "check": [
+      "Your available responses have narrowed considerably.",
+      "Pressure converts attention into mistakes."
+    ],
+    "checked": [
+      "A temporary engagement spike.",
+      "Noted. Correcting the model."
+    ],
+    "winning": [
+      "The trend line is becoming conclusive.",
+      "This outcome has tested extremely well."
+    ],
+    "losing": [
+      "An inconvenient data point is not a conclusion.",
+      "The narrative is still recoverable."
+    ],
+    "mate": [
+      "Result confirmed.",
+      "The final metric speaks for itself."
+    ],
+    "draw": [
+      "A statistically unsatisfying equilibrium.",
+      "Neither model achieved dominance."
+    ]
+  },
+  "defaultExpression": "composed",
+  "expressionMap": {
+    "opening": "composed",
+    "move": "composed",
+    "capture": "smug",
+    "check": "smug",
+    "checked": "surprised",
+    "winning": "smug",
+    "losing": "annoyed",
+    "mate": "satisfied",
+    "draw": "composed"
+  }
+}

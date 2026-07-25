@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cipherboard Duel</title><link rel="stylesheet" href="app.css"></head>
+<body><div class="app">
+<header class="top"><div class="brand">Hope's Peak After Hours</div><div class="title"><h1>Cipherboard Duel</h1><p>Personality-driven character chess</p></div><div class="setup"><button id="setupBtn">Match Setup</button></div></header>
+<main class="arena">
+<section class="card character" id="leftCard" style="--accent:#806cff;--accent2:#38b8ff">
+ <div class="portrait" id="leftPortrait"></div><span class="expression" id="leftExpression">Neutral</span>
+ <div class="info"><b id="leftName">White</b><small id="leftTalent"></small><div class="speech" id="leftSpeech">Waiting...</div><div class="meter-label"><span>Momentum</span><span>White</span></div><div class="meter"><i id="leftMeter"></i></div></div>
+</section>
+<section>
+ <div class="board-panel">
+  <div class="hud"><div class="chip" id="whiteChip">WHITE</div><b>VS</b><div class="chip" id="blackChip">BLACK</div></div>
+  <div class="momentum"><span class="l" id="momentumLeft"></span><span class="r" id="momentumRight"></span></div>
+  <div class="board" id="board"></div>
+  <div class="status"><b id="turnText">Choose a match</b><span id="fenText">Move 1</span></div>
+  <div class="controls"><button class="primary" id="play">▶ Run</button><button id="step">Step AI</button><button id="newGame">New Match</button><select id="delay"><option value="1800">Cinematic</option><option value="950" selected>Normal</option><option value="350">Fast</option></select><button id="setupBtn2" onclick="document.querySelector('#setupModal').hidden=false">Setup</button></div>
+ </div>
+ </section>
+<section class="card character" id="rightCard" style="--accent:#ff4fa8;--accent2:#ffc15c">
+ <div class="portrait" id="rightPortrait"></div><span class="expression" id="rightExpression">Neutral</span>
+ <div class="info"><b id="rightName">Black</b><small id="rightTalent"></small><div class="speech" id="rightSpeech">Waiting...</div><div class="meter-label"><span>Momentum</span><span>Black</span></div><div class="meter"><i id="rightMeter"></i></div></div>
+</section>
+</main>
+<section class="log"><div class="log-head"><span>Match Timeline</span><span id="statusDetail">Waiting for setup</span></div><div class="moves" id="moves"></div></section>
+</div>
+<div class="modal" id="setupModal" hidden><div class="panel"><h2>Match Setup</h2><div class="grid">
+ <div class="field"><label>White character</label><select id="whiteCharacter"></select></div>
+ <div class="field"><label>Black character</label><select id="blackCharacter"></select></div>
+ <div class="field"><label>Mode</label><select id="mode"><option value="ava">AI vs. AI</option><option value="hva">Human vs. AI</option><option value="hvh">Human vs. Human</option></select></div>
+ <div class="field"><label>Match seed (optional)</label><input id="seed" placeholder="Leave blank for random"></div>
+</div><div class="hint">Character folders are discovered automatically during GitHub Pages deployment. Add or edit a character.json file, commit it, and the catalogue rebuilds itself.</div>
+<div class="actions"><button id="swap">Swap sides</button><button id="cancelSetup">Cancel</button><button class="primary" id="startMatch">Start Match</button></div></div></div>
+<script type="module" src="app.js"></script></body></html>
