@@ -1,5 +1,14 @@
 # Changelog
 
+## Phase 10 — Human Strength Simulation
+
+- Added Elo-based search depth and alpha-beta calculation.
+- Added skill-based evaluation noise and candidate breadth.
+- Added conversion reliability using endgame knowledge, practical accuracy, and discipline.
+- Added strong penalties for repetition, stalemate, and immediate draws while ahead.
+- Reduced personality bonuses so they choose among viable moves instead of masking major skill gaps.
+- Preserved opening identity, adaptive memory, relationship dialogue, manual controls, and match review.
+
 ## Phase 9 — Adaptive Character Memory
 
 - Added temporary per-match memory for both characters.

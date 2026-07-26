@@ -184,6 +184,33 @@ function evaluate(){
  for(const row of game.board())for(const p of row)if(p)s+=(p.color==="w"?1:-1)*value[p.type];
  return s;
 }
+function staticEvaluation(color){
+ const material=evaluate()*(color==="w"?1:-1);
+ if(game.isCheckmate())return game.turn()===color?-100000:100000;
+ if(game.isDraw())return 0;
+ const mobility=game.moves().length*(game.turn()===color?1:-1);
+ const checkPressure=game.inCheck()*(game.turn()===color?-28:28);
+ return material+mobility*1.5+checkPressure;
+}
+function orderedMoves(){
+ return game.moves({verbose:true}).sort((a,b)=>{
+  const score=m=>(m.captured?value[m.captured]||0:0)+(String(m.san).includes("+")?80:0)+(String(m.san).includes("#")?10000:0);
+  return score(b)-score(a);
+ });
+}
+function minimax(depth,alpha,beta,rootColor){
+ if(depth<=0||game.isGameOver())return staticEvaluation(rootColor);
+ const maximizing=game.turn()===rootColor;
+ const moves=orderedMoves();
+ if(maximizing){
+  let best=-Infinity;
+  for(const move of moves){game.move(move);best=Math.max(best,minimax(depth-1,alpha,beta,rootColor));game.undo();alpha=Math.max(alpha,best);if(beta<=alpha)break;}
+  return best;
+ }
+ let best=Infinity;
+ for(const move of moves){game.move(move);best=Math.min(best,minimax(depth-1,alpha,beta,rootColor));game.undo();beta=Math.min(beta,best);if(beta<=alpha)break;}
+ return best;
+}
 const clamp01=n=>Math.max(0,Math.min(1,Number(n)||0));
 const pct=n=>clamp01((Number(n)||0)/100);
 function eloMidpoint(value){
@@ -211,6 +238,9 @@ function generateBrain(c){
 
  return {
   elo,
+  searchDepth:elo>=1650?3:elo>=1250?2:1,
+  evaluationNoise:Math.max(8,105-(elo-900)*.095),
+  conversion:clamp01(pct(skill.endgameKnowledge)*.45+pct(skill.practicalAccuracy)*.35+pct(core.discipline)*.2),
   aggression:clamp01(pct(core.aggression)*.55+pct(core.competitiveness)*.2+(includesText(styles,"aggressive")?.25:0)),
   tactics:clamp01(pct(apt.tacticalVision)*.55+pct(apt.patternRecognition)*.2+(tacticalStyle?.25:0)),
   positional:clamp01(pct(apt.strategicPlanning)*.45+pct(apt.longTermPlanning)*.3+(strategicStyle?.25:0)),
@@ -334,17 +364,26 @@ function updateMatchMemory(move,beforeEval,afterEval){
   opponent.contextualEvent="opponentRepeating";
  }
 }
-function chessScore(move){
- const before=evaluate(),actor=move.color;
+function chessScore(move,c){
+ const brain=brainFor(c);
+ const actor=move.color;
+ const before=evaluate();
  game.move(move);
  const after=evaluate();
  const replies=game.moves({verbose:true});
+ const terminalDraw=game.isDraw();
+ const terminalMate=game.isCheckmate();
+ const searchScore=terminalMate?100000:terminalDraw?0:minimax(Math.max(0,brain.searchDepth-1),-Infinity,Infinity,actor);
  const result={
   material:actor==="w"?after-before:before-after,
   check:game.inCheck(),
-  mate:game.isCheckmate(),
+  mate:terminalMate,
+  draw:terminalDraw,
+  repetition:typeof game.isThreefoldRepetition==="function"&&game.isThreefoldRepetition(),
+  stalemate:typeof game.isStalemate==="function"&&game.isStalemate(),
   replyCount:replies.length,
-  forcingReplies:replies.filter(r=>r.captured||String(r.san).includes("+")).length
+  forcingReplies:replies.filter(r=>r.captured||String(r.san).includes("+")).length,
+  searchScore
  };
  game.undo();
  return result;
@@ -352,41 +391,54 @@ function chessScore(move){
 function personalityScore(move,c,position){
  const brain=brainFor(c);
  const movingValue=value[move.piece]||0;
- let score=position.material*(.75+brain.material*.8);
+ let score=position.searchScore+position.material*(.35+brain.material*.35);
 
  if(position.mate)score+=100000;
- else if(position.check)score+=75+135*brain.tactics+90*brain.pressure;
+ else if(position.check)score+=45+85*brain.tactics+55*brain.pressure;
 
  if(move.captured){
-  score+=(value[move.captured]||0)*(.15+.55*brain.material);
-  score+=35*brain.aggression;
-  if(move.captured==="q")score+=110*brain.pressure;
+  score+=(value[move.captured]||0)*(.08+.28*brain.material);
+  score+=22*brain.aggression;
+  if(move.captured==="q")score+=65*brain.pressure;
  }
-
- if(move.san.includes("O-O"))score+=45+100*brain.kingSafety;
- if(move.piece==="q")score+=18*brain.pressure-38*brain.kingSafety;
- if(move.piece==="q"&&brain.queenPreference>.8&&move.captured)score+=45;
+ if(move.san.includes("O-O"))score+=28+60*brain.kingSafety;
+ if(move.piece==="q")score+=10*brain.pressure-24*brain.kingSafety;
+ if(move.piece==="q"&&brain.queenPreference>.8&&move.captured)score+=28;
 
  const center=["c4","c5","d4","d5","e4","e5","f4","f5"].includes(move.to);
- score+=(center?1:0)*(18+34*brain.positional);
- if(move.piece!=="p"&&game.history().length<16)score+=16*brain.positional;
-
+ score+=(center?1:0)*(10+20*brain.positional);
+ if(move.piece!=="p"&&game.history().length<16)score+=10*brain.positional;
  const complexity=Math.min(1,(position.replyCount+position.forcingReplies*2)/38);
- score+=(complexity-.45)*115*brain.complexity;
- score+=(18-position.replyCount)*4*brain.simplification;
- if(move.captured)score-=movingValue*.025*brain.risk;
+ score+=(complexity-.45)*55*brain.complexity;
+ score+=(18-position.replyCount)*2.2*brain.simplification;
+ if(move.captured)score-=movingValue*.014*brain.risk;
 
- const skillControl=clamp01((brain.elo-600)/1800);
- score+=(seedRng()-.5)*(45+150*brain.randomness)*(1-.55*skillControl);
- score+=(seedRng()-.5)*80*brain.novelty;
-
- if(seedRng()<brain.blunderChance*(1-.45*skillControl)){
-  score-=120+seedRng()*260;
+ const currentAdvantage=evaluate()*(move.color==="w"?1:-1);
+ if(position.draw){
+  const winning=currentAdvantage>120;
+  const losing=currentAdvantage<-120;
+  if(winning)score-=220+420*brain.conversion;
+  else if(losing)score+=80+160*(1-brain.aggression);
+  else score+=(brain.aggression>.65?-90:20);
  }
+ if(currentAdvantage>120){
+  score+=position.searchScore*.12*brain.conversion;
+  if(position.repetition||position.stalemate)score-=500*brain.conversion;
+ }
+
+ // Human-strength perception: weaker players mis-evaluate more, while personality
+ // determines the direction of the error rather than merely breaking ties.
+ let perceptionNoise=(seedRng()-.5)*2*brain.evaluationNoise;
+ if(brain.aggression>.7&&position.check)perceptionNoise+=brain.evaluationNoise*.35;
+ if(brain.kingSafety>.8&&move.san.includes("O-O"))perceptionNoise+=brain.evaluationNoise*.25;
+ if(brain.novelty>.75&&complexity>.55)perceptionNoise+=brain.evaluationNoise*.28;
+ score+=perceptionNoise;
+
+ if(seedRng()<brain.blunderChance){score-=90+seedRng()*(110+brain.evaluationNoise*2.2);}
  return score;
 }
 function moveScore(move,c){
- const position=chessScore(move);
+ const position=chessScore(move,c);
  return personalityScore(move,c,position)+memoryScore(move,c,position);
 }
 function weightedOpeningChoice(options,freeformWeight){
@@ -453,16 +505,14 @@ function chooseMove(c){
  if(bookMove)return bookMove;
  const brain=brainFor(c);
  const ranked=moves.map(m=>({m,s:moveScore(m,c)})).sort((a,b)=>b.s-a.s);
- const skillControl=clamp01((brain.elo-600)/1800);
- const breadth=Math.max(1,Math.min(ranked.length,Math.round(7-5*skillControl+brain.randomness*4)));
+ const skillControl=clamp01((brain.elo-900)/900);
+ const breadth=Math.max(1,Math.min(ranked.length,Math.round(6-4*skillControl+brain.randomness*2)));
  const pool=ranked.slice(0,breadth);
- const temperature=.45+brain.randomness*1.8;
- const weights=pool.map((item,i)=>Math.exp(-i/temperature));
+ const temperature=.28+brain.randomness*1.15+(1-skillControl)*.35;
+ const best=pool[0].s;
+ const weights=pool.map(item=>Math.exp((item.s-best)/Math.max(18,55*temperature)));
  let roll=seedRng()*weights.reduce((a,b)=>a+b,0);
- for(let i=0;i<pool.length;i++){
-  roll-=weights[i];
-  if(roll<=0)return pool[i].m;
- }
+ for(let i=0;i<pool.length;i++){roll-=weights[i];if(roll<=0)return pool[i].m;}
  return pool[0].m;
 }
 function moveEvent(move){
