@@ -235,6 +235,18 @@
     "dialogueStyle": "Tyler speaks calmly, politely, and sparingly, using practical safety, route, risk, pressure, and option-based vocabulary. He rarely taunts and tends to frame strong moves as necessary corrections rather than displays of dominance. When comfortable, his tone is mild and reassuring; when pressured, he becomes quieter, more clipped, and more procedural, as if walking himself through an emergency checklist.",
     "expressionStyle": "Tyler begins with a calm, guarded focus and soft polite neutrality. His thinking face is still and observant, with narrowed green eyes tracking danger routes across the board. Confidence appears as a small restrained smile rather than smugness, surprise as a brief alert widening of the eyes, frustration as a thin almost-smile, and defeat as quiet resignation followed by immediate analysis of what went wrong.",
     "engineNotes": "Implement Tyler as a solid, adaptive, risk-aware opponent who values king safety, piece coordination, prophylaxis, and practical conversion. His move selector should prefer stable improvements, defensive resources, useful trades, and counterattacks that punish the opponent's unsafe advances. He should avoid unnecessary complications when equal or better, but become very resourceful when worse, seeking fortresses, perpetual checks, simplification, and opponent overreach. Dialogue should be moderate in normal positions, sparse during stress or deep calculation, and slightly warmer when he stabilizes danger. Emotional state should remain controlled, with visible spikes only after sudden threats, blunders, or positions that feel impossible to contain.",
-    "designerNotes": "Tyler should not feel like a passive defensive character. His caution is active, practical, and survival-trained: he wins by reading danger early, preparing exits, reducing chaos, and letting opponents exhaust themselves against a position that refuses to collapse. His chess personality should feel like a calm person with a map, a checklist, and five contingency plans—polite on the surface, quietly controlling underneath, and far more dangerous when the position becomes a survival problem."
+    "designerNotes": "Tyler should not feel like a passive defensive character. His caution is active, practical, and survival-trained: he wins by reading danger early, preparing exits, reducing chaos, and letting opponents exhaust themselves against a position that refuses to collapse. His chess personality should feel like a calm person with a map, a checklist, and five contingency plans—polite on the surface, quietly controlling underneath, and far more dangerous when the position becomes a survival problem.",
+    "cognitiveModel": {
+      "vision": 70,
+      "calculation": 65,
+      "evaluation": 72,
+      "planning": 76,
+      "conversion": 64,
+      "defense": 82,
+      "initiative": 43,
+      "confidence": 64,
+      "adaptability": 78,
+      "riskTolerance": 35
+    }
   }
 }

@@ -238,6 +238,18 @@
     "dialogueStyle": "Damian speaks in precise, formal, evidence-first language with a controlled cadence and occasional clipped verdicts. He uses research, law, audit, method, proof, liability, and citation vocabulary, often converting chess events into claims that must survive review. He is usually quiet between moves, but becomes sharply verbal when an opponent repeats a weakness, plays an unsound idea, or threatens his sense of control. His humor is dry, pedantic, and faintly dramatic, especially when a position is inefficient or beneath his standards.",
     "expressionStyle": "Damian begins composed and watchful, with narrow focused eyes and minimal visible emotion. In calculation he becomes almost statue-still, occasionally adjusting his glasses or lowering his gaze as if reviewing a file. Confidence appears as a small, restrained satisfaction rather than a grin; frustration appears through long-suffering sighs, tighter posture, and colder diction. When losing, his expression hardens into controlled tension rather than panic, and defeat lands as a silent, bitter acceptance of a conclusion he cannot refute.",
     "engineNotes": "Prioritize solid development, structural soundness, prophylaxis, central control, piece coordination, and technically justified exchanges. Damian should prefer medium-to-long games where preparation, method, and endgame discipline matter. He should avoid chaotic speculative sacrifices unless calculation clearly supports them, and he should respond to unsound aggression by absorbing pressure and counterattacking the weak premise. Increase his accuracy in quiet, structured positions and endgames; decrease flexibility in strange tactical scrambles or positions that require intuitive messiness. Dialogue should be sparse at first, then sharper when he identifies errors, contradictions, repeated moves, or methodological failures. Emotional state should narrow under stress: less warmth, more definitions, more clipped verdicts.",
-    "designerNotes": "Damian should not feel like a generic genius or cold villain. His chess identity is method as morality: every move should seem researched, justified, and filed into a larger argument. He is strong because he studies, remembers, organizes, and refuses sloppy conclusions, but his rigidity, pride, and discomfort with chaos prevent him from becoming effortless. He is most entertaining when the opponent tries to drag him into disorder and he attempts to put the entire board back into a courtroom."
+    "designerNotes": "Damian should not feel like a generic genius or cold villain. His chess identity is method as morality: every move should seem researched, justified, and filed into a larger argument. He is strong because he studies, remembers, organizes, and refuses sloppy conclusions, but his rigidity, pride, and discomfort with chaos prevent him from becoming effortless. He is most entertaining when the opponent tries to drag him into disorder and he attempts to put the entire board back into a courtroom.",
+    "cognitiveModel": {
+      "vision": 96,
+      "calculation": 94,
+      "evaluation": 96,
+      "planning": 95,
+      "conversion": 94,
+      "defense": 90,
+      "initiative": 68,
+      "confidence": 66,
+      "adaptability": 91,
+      "riskTolerance": 30
+    }
   }
 }
