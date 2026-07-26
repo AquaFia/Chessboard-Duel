@@ -246,8 +246,6 @@ function generateBrain(c){
   vision,calculation,evaluation,planning,conversion,defense,initiative,confidence,adaptability,risk,
   searchDepth,
   evaluationNoise:8+(1-evaluation)*86+(1-vision)*30,
-  tacticalBlindness:clamp01((1-vision)*.62+(1-calculation)*.38),
-  planReliability:clamp01(planning*.62+adaptability*.24+evaluation*.14),
   aggression:clamp01(pct(core.aggression)*.46+pct(core.competitiveness)*.16+initiative*.28+(includesText(styles,"aggressive")?.1:0)),
   tactics:clamp01(pct(apt.tacticalVision)*.32+pct(apt.patternRecognition)*.16+vision*.28+calculation*.16+(tacticalStyle?.08:0)),
   positional:clamp01(pct(apt.strategicPlanning)*.28+pct(apt.longTermPlanning)*.22+planning*.32+evaluation*.12+(strategicStyle?.06:0)),
@@ -457,23 +455,102 @@ function selectIntent(character,analysis){
 }
 function buildPlan(intent,analysis){
  const plans={
-  emergencyDefense:{priorities:["escapeCheck","tradeAttackers","kingSafety"]},
-  completeDevelopment:{priorities:["developPiece","castle","controlCenter"]},
-  technicalConversion:{priorities:["preserveAdvantage","tradeWhenSafe","advancePassedPawn"]},
-  restrictCounterplay:{priorities:["reduceForcingReplies","kingSafety","controlCenter"]},
-  simplify:{priorities:["tradePieces","avoidDrawWhileWinning","reduceForcingReplies"]},
-  counterattack:{priorities:["check","capture","createThreat"]},
-  createComplications:{priorities:["increaseForcingReplies","check","novelMove"]},
-  reduceDanger:{priorities:["kingSafety","tradeAttackers","reduceForcingReplies"]},
-  kingsideAttack:{priorities:["check","moveTowardEnemyKing","increaseForcingReplies"]},
-  tacticalOpportunity:{priorities:["mate","check","capture"]},
-  improveWorstPiece:{priorities:["developPiece","centralize","avoidRepeat"]},
-  pawnBreak:{priorities:["centralPawnMove","capture","openLines"]},
-  seizeInitiative:{priorities:["check","developWithTempo","centralize"]},
-  advancePassedPawn:{priorities:["advancePawn","supportPawn","tradePieces"]},
+  emergencyDefense:{priorities:["kingSafety","tradePieces","centralize"]},
+  completeDevelopment:{priorities:["developPiece","castle","centralize"]},
+  technicalConversion:{priorities:["tradePieces","advancePawn","centralize"]},
+  restrictCounterplay:{priorities:["reduceForcingReplies","kingSafety","centralize"]},
+  simplify:{priorities:["tradePieces","reduceForcingReplies","kingSafety"]},
+  counterattack:{priorities:["check","capture","increaseForcingReplies"]},
+  createComplications:{priorities:["increaseForcingReplies","check","capture"]},
+  reduceDanger:{priorities:["kingSafety","tradePieces","reduceForcingReplies"]},
+  kingsideAttack:{priorities:["check","increaseForcingReplies","capture"]},
+  tacticalOpportunity:{priorities:["check","capture","increaseForcingReplies"]},
+  improveWorstPiece:{priorities:["developPiece","centralize","kingSafety"]},
+  pawnBreak:{priorities:["advancePawn","capture","increaseForcingReplies"]},
+  seizeInitiative:{priorities:["check","developPiece","centralize"]},
+  advancePassedPawn:{priorities:["advancePawn","tradePieces","centralize"]},
   improvePosition:{priorities:["centralize","developPiece","kingSafety"]}
  };
  return {intent,phase:analysis.phase,priorities:plans[intent]?.priorities||plans.improvePosition.priorities};
+}
+function moveHistoryRepeatCount(move){
+ const verbose=game.history({verbose:true});
+ let count=0;
+ for(let index=verbose.length-1;index>=0&&index>=verbose.length-8;index--){
+  const previous=verbose[index];
+  if(previous.color!==move.color)continue;
+  if(previous.piece===move.piece&&previous.to===move.from)count++;
+ }
+ return count;
+}
+function moveFeatures(move,analysis){
+ const capturedValue=move.captured?(value[move.captured]||0):0;
+ const movingValue=value[move.piece]||0;
+ const san=String(move.san||"");
+ return {
+  isMate:san.includes("#"),
+  isCheck:san.includes("+")||san.includes("#"),
+  isCapture:Boolean(move.captured),
+  capturedValue,
+  movingValue,
+  captureGain:capturedValue-movingValue,
+  castles:san.includes("O-O"),
+  develops:move.piece!=="p"&&analysis.phase==="opening",
+  central:!["a","b","g","h"].includes(move.to[0])&&["3","4","5","6"].includes(move.to[1]),
+  pawnAdvance:move.piece==="p",
+  queenMove:move.piece==="q",
+  repeatCount:moveHistoryRepeatCount(move),
+  quiet:!move.captured&&!san.includes("+")&&!san.includes("#")
+ };
+}
+function discoveryChance(move,features,brain,plan,analysis){
+ if(analysis.inCheck)return 1;
+ if(features.isMate)return 1;
+ let chance=.08+brain.vision*.52+brain.calculation*.08;
+ if(features.isCheck)chance+=.18+.22*brain.tactics+.12*brain.aggression;
+ if(features.isCapture)chance+=.16+.2*brain.tactics+.16*brain.material;
+ if(features.capturedValue>=500)chance+=.22;
+ if(features.castles)chance+=.12*brain.kingSafety;
+ if(features.develops)chance+=.1*brain.positional;
+ if(features.central)chance+=.06*brain.positional;
+ if(features.quiet)chance-=.1*(1-brain.vision);
+ if(features.queenMove)chance+=.06*brain.queenPreference;
+ if(plan.priorities.includes("check")&&features.isCheck)chance+=.12;
+ if(plan.priorities.includes("capture")&&features.isCapture)chance+=.1;
+ if(plan.priorities.includes("developPiece")&&features.develops)chance+=.1;
+ if(plan.priorities.includes("kingSafety")&&features.castles)chance+=.12;
+ if(plan.priorities.includes("advancePawn")&&features.pawnAdvance)chance+=.08;
+ return clamp01(chance);
+}
+function candidateTarget(brain,legalCount,analysis){
+ if(analysis.inCheck)return legalCount;
+ const competence=brain.vision*.48+brain.calculation*.27+brain.planning*.15+brain.evaluation*.1;
+ const target=Math.round(3+competence*12+brain.novelty*2);
+ return Math.max(3,Math.min(legalCount,target));
+}
+function discoverCandidates(character,moves,analysis,plan){
+ const brain=brainFor(character);
+ const annotated=moves.map(move=>({move,features:moveFeatures(move,analysis)}));
+ if(analysis.inCheck)return {noticed:annotated,missed:[]};
+ const noticed=[];
+ const missed=[];
+ for(const item of annotated){
+  const chance=discoveryChance(item.move,item.features,brain,plan,analysis);
+  item.discoveryChance=chance;
+  (seedRng()<chance?noticed:missed).push(item);
+ }
+ const target=candidateTarget(brain,moves.length,analysis);
+ const importance=item=>{
+  const f=item.features;
+  return (f.isMate?10000:0)+(f.isCheck?450:0)+f.capturedValue*1.2+(f.castles?120:0)+(f.develops?55:0)+(f.central?25:0)-f.repeatCount*45;
+ };
+ noticed.sort((a,b)=>importance(b)-importance(a));
+ missed.sort((a,b)=>importance(b)-importance(a));
+ while(noticed.length<Math.min(target,moves.length)&&missed.length)noticed.push(missed.shift());
+ if(noticed.length>target){
+  missed.push(...noticed.splice(target));
+ }
+ return {noticed,missed};
 }
 function chessScore(move,character){
  const brain=brainFor(character);
@@ -484,6 +561,7 @@ function chessScore(move,character){
  const replies=game.moves({verbose:true});
  const terminalDraw=game.isDraw();
  const terminalMate=game.isCheckmate();
+ const immediateScore=staticEvaluation(actor);
  const searchScore=terminalMate?100000:terminalDraw?0:minimax(Math.max(0,brain.searchDepth-1),-Infinity,Infinity,actor);
  const result={
   material:actor==="w"?after-before:before-after,
@@ -491,8 +569,8 @@ function chessScore(move,character){
   repetition:typeof game.isThreefoldRepetition==="function"&&game.isThreefoldRepetition(),
   stalemate:typeof game.isStalemate==="function"&&game.isStalemate(),
   replyCount:replies.length,
-  forcingReplies:replies.filter(reply=>reply.captured||String(reply.san).includes("+")).length,
-  searchScore,
+  forcingReplies:replies.filter(reply=>reply.captured||String(reply.san).includes("+")||String(reply.san).includes("#")).length,
+  searchScore,immediateScore,
   centerGain:Math.max(-2,centerDistance(move.from)-centerDistance(move.to)),
   develops:move.piece!=="p"&&game.history().length<16,
   castles:String(move.san).includes("O-O")
@@ -500,61 +578,60 @@ function chessScore(move,character){
  game.undo();
  return result;
 }
-function planScore(move,position,plan,character){
+function personalityPreference(move,position,plan,character,features){
  const brain=brainFor(character);
- const movingValue=value[move.piece]||0;
- const currentAdvantage=evaluate()*(move.color==="w"?1:-1);
- let score=position.searchScore+position.material*(.35+brain.material*.35);
- if(position.mate)score+=100000;
- if(position.check)score+=58+80*brain.tactics;
- if(move.captured)score+=(value[move.captured]||0)*(.12+.24*brain.material)-movingValue*.012*brain.risk;
+ let score=0;
+ if(position.check)score+=24*brain.aggression+26*brain.tactics;
+ if(features.isCapture)score+=18*brain.aggression+20*brain.material;
+ if(features.castles)score+=30*brain.kingSafety;
+ if(features.develops)score+=20*brain.positional;
+ if(features.central)score+=16*brain.positional;
+ if(features.pawnAdvance)score+=10*brain.aggression;
+ if(features.quiet)score+=12*(1-brain.aggression)+10*brain.positional;
+ if(features.queenMove)score+=10*brain.queenPreference;
+ score-=features.repeatCount*(18+34*brain.adaptability);
  for(const priority of plan.priorities){
-  if(priority==="escapeCheck"&&!position.draw)score+=95;
-  if(priority==="mate"&&position.mate)score+=100000;
-  if(priority==="check"&&position.check)score+=42+55*brain.pressure;
-  if(priority==="capture"&&move.captured)score+=28+36*brain.aggression;
-  if(priority==="castle"&&position.castles)score+=62+70*brain.kingSafety;
-  if(priority==="kingSafety"&&position.castles)score+=52+65*brain.kingSafety;
-  if(priority==="developPiece"&&position.develops)score+=22+42*brain.positional;
-  if(priority==="centralize")score+=position.centerGain*(12+22*brain.positional);
-  if(priority==="controlCenter"&&["c4","c5","d4","d5","e4","e5","f4","f5"].includes(move.to))score+=22+28*brain.positional;
-  if(priority==="centralPawnMove"&&move.piece==="p"&&["c","d","e","f"].includes(move.from[0]))score+=30+30*brain.aggression;
-  if(priority==="advancePawn"&&move.piece==="p")score+=24+28*brain.conversion;
-  if(priority==="tradePieces"&&move.captured)score+=26+50*brain.simplification;
-  if(priority==="tradeAttackers"&&move.captured)score+=22+46*brain.kingSafety;
-  if(priority==="reduceForcingReplies")score+=(18-position.forcingReplies)*2.1;
-  if(priority==="increaseForcingReplies")score+=position.forcingReplies*4.2+position.replyCount*1.1;
-  if(priority==="moveTowardEnemyKing"&&position.check)score+=34+40*brain.aggression;
-  if(priority==="novelMove")score+=position.replyCount*1.4*brain.novelty;
-  if(priority==="preserveAdvantage"&&currentAdvantage>120)score+=position.searchScore*.12*brain.conversion;
-  if(priority==="avoidDrawWhileWinning"&&currentAdvantage>120&&(position.draw||position.repetition||position.stalemate))score-=520*brain.conversion;
-  if(priority==="avoidRepeat"&&position.repetition)score-=170;
+  if(priority==="check"&&position.check)score+=24;
+  if(priority==="capture"&&features.isCapture)score+=22;
+  if(priority==="castle"&&features.castles)score+=28;
+  if(priority==="kingSafety"&&features.castles)score+=22;
+  if(priority==="developPiece"&&features.develops)score+=18;
+  if(priority==="centralize")score+=position.centerGain*8;
+  if(priority==="tradePieces"&&features.isCapture)score+=18*brain.simplification;
+  if(priority==="reduceForcingReplies")score+=Math.max(-18,Math.min(18,(8-position.forcingReplies)*2));
+  if(priority==="increaseForcingReplies")score+=Math.min(24,position.forcingReplies*4);
+  if(priority==="advancePawn"&&features.pawnAdvance)score+=18;
  }
- if(position.draw){
-  if(currentAdvantage>120)score-=240+430*brain.conversion;
-  else if(currentAdvantage<-120)score+=90+160*(1-brain.aggression);
-  else score+=brain.aggression>.65?-85:18;
- }
- return score;
+ return Math.max(-90,Math.min(90,score));
 }
-function perceivedCandidateScore(move,position,plan,character){
+function perceivePosition(position,brain){
+ let perceived=position.searchScore;
+ const threatDifficulty=clamp01(position.forcingReplies/7+(Math.abs(position.searchScore-position.immediateScore)>180?.25:0));
+ const detection=clamp01(brain.vision*.44+brain.calculation*.4+brain.evaluation*.16-threatDifficulty*.28);
+ const sawConsequences=seedRng()<detection;
+ if(!sawConsequences){
+  const shallowWeight=.7+.2*(1-brain.calculation);
+  perceived=position.immediateScore*shallowWeight+position.searchScore*(1-shallowWeight);
+ }
+ const evaluationNoise=(seedRng()-.5)*2*brain.evaluationNoise;
+ return {score:perceived+evaluationNoise,sawConsequences,detection};
+}
+function perceivedCandidateScore(move,position,plan,character,features){
  const brain=brainFor(character);
- const objective=position.searchScore+position.material*(.35+brain.material*.35);
- const planned=planScore(move,position,plan,character)+memoryScore(move,character,position);
- let score=objective+(planned-objective)*brain.planReliability;
- let noise=(seedRng()-.5)*2*brain.evaluationNoise;
- if(plan.intent==="kingsideAttack"&&position.check)noise+=brain.evaluationNoise*.24*brain.confidence;
- if(plan.intent==="reduceDanger"&&position.castles)noise+=brain.evaluationNoise*.18*brain.defense;
- if(plan.intent==="createComplications"&&position.replyCount>18)noise+=brain.evaluationNoise*.2*brain.risk;
- if(position.forcingReplies>0&&seedRng()<brain.tacticalBlindness){
-  score-=position.forcingReplies*(18+52*brain.tacticalBlindness);
+ const perception=perceivePosition(position,brain);
+ let skillScore=perception.score+position.material*(.45+.35*brain.material);
+ const personalityScore=personalityPreference(move,position,plan,character,features)+memoryScore(move,character,position);
+ let score=skillScore+personalityScore;
+ if(position.mate)score=100000;
+ if(position.draw){
+  const advantage=evaluate()*(move.color==="w"?1:-1);
+  if(advantage>120)score-=180+360*brain.conversion;
+  else if(advantage<-120)score+=60+120*(1-brain.aggression);
  }
- if(move.captured&&seedRng()<brain.tacticalBlindness*.22){
-  score-=(value[move.captured]||0)*(.12+.2*brain.tacticalBlindness);
- }
- score+=noise;
- if(seedRng()<brain.blunderChance)score-=100+seedRng()*(130+brain.evaluationNoise*2.4);
- return score;
+ if(features.isCapture&&position.material>=250)score+=120+100*brain.evaluation;
+ if(features.isCapture&&position.material>=500)score+=160;
+ if(seedRng()<brain.blunderChance)score-=80+seedRng()*(110+brain.evaluationNoise*1.8);
+ return {score,perception,skillScore,personalityScore};
 }
 function weightedOpeningChoice(options,freeformWeight){
  const total=options.reduce((sum,line)=>sum+line.weight,0)+freeformWeight;
@@ -624,28 +701,42 @@ function chooseMove(c){
  const plan=buildPlan(intent,analysis);
  c._intent=intent;
  c._positionAnalysis=analysis;
- const ranked=moves.map(move=>{
-  const position=chessScore(move,c);
-  return {m:move,s:perceivedCandidateScore(move,position,plan,c),position};
+ const discovery=discoverCandidates(c,moves,analysis,plan);
+ const ranked=discovery.noticed.map(item=>{
+  const position=chessScore(item.move,c);
+  const perceived=perceivedCandidateScore(item.move,position,plan,c,item.features);
+  return {m:item.move,s:perceived.score,position,features:item.features,perceived};
  }).sort((a,b)=>b.s-a.s);
- const cognitiveControl=clamp01(brain.vision*.34+brain.calculation*.36+brain.evaluation*.3);
- const breadth=Math.max(1,Math.min(ranked.length,Math.round(7-5*cognitiveControl+brain.randomness*2.5)));
+ const competence=clamp01(brain.vision*.3+brain.calculation*.3+brain.evaluation*.25+brain.confidence*.15);
+ const breadth=Math.max(1,Math.min(ranked.length,Math.round(5-3*competence+brain.randomness*2)));
  const pool=ranked.slice(0,breadth);
- const temperature=.22+brain.randomness*1.05+(1-cognitiveControl)*.55+(1-brain.confidence)*.18;
+ const temperature=.18+brain.randomness*.9+(1-competence)*.5;
  const best=pool[0].s;
- const weights=pool.map(item=>Math.exp((item.s-best)/Math.max(18,55*temperature)));
+ const weights=pool.map(item=>Math.exp((item.s-best)/Math.max(16,48*temperature)));
  let roll=seedRng()*weights.reduce((sum,item)=>sum+item,0);
  let chosen=pool[0];
  for(let index=0;index<pool.length;index++){
   roll-=weights[index];
   if(roll<=0){chosen=pool[index];break;}
  }
+ const objectiveRanked=moves.map(move=>({move,score:chessScore(move,c).searchScore})).sort((a,b)=>b.score-a.score);
+ const objectiveBest=objectiveRanked[0];
+ const noticedSans=new Set(discovery.noticed.map(item=>item.move.san));
  c._cognitiveTrace={
   intent,plan:plan.priorities.join(" → "),
   confidence:Math.round(brain.confidence*100),vision:Math.round(brain.vision*100),
   calculation:Math.round(brain.calculation*100),evaluation:Math.round(brain.evaluation*100),
   risk:Math.round(brain.risk*100),chosen:chosen.m.san,
-  candidates:ranked.slice(0,5).map(item=>({san:item.m.san,score:Math.round(item.s),forcingReplies:item.position.forcingReplies}))
+  legalCount:moves.length,noticedCount:discovery.noticed.length,
+  objectiveBest:objectiveBest?.move.san||"—",
+  bestWasNoticed:objectiveBest?noticedSans.has(objectiveBest.move.san):true,
+  sawConsequences:chosen.perceived.perception.sawConsequences,
+  candidates:ranked.slice(0,6).map(item=>({
+   san:item.m.san,score:Math.round(item.s),skill:Math.round(item.perceived.skillScore),
+   personality:Math.round(item.perceived.personalityScore),forcingReplies:item.position.forcingReplies,
+   sawConsequences:item.perceived.perception.sawConsequences
+  })),
+  missed:discovery.missed.slice(0,5).map(item=>item.move.san)
  };
  renderDiagnostics(c);
  return chosen.m;
@@ -660,14 +751,19 @@ function renderDiagnostics(character){
    <div><span>Character</span><strong>${character.shortName||character.name}</strong></div>
    <div><span>Intent</span><strong>${String(trace.intent).replace(/([A-Z])/g," $1")}</strong></div>
    <div><span>Chosen move</span><strong>${trace.chosen}</strong></div>
-   <div><span>Confidence</span><strong>${trace.confidence}%</strong></div>
+   <div><span>Objective best</span><strong>${trace.objectiveBest}</strong></div>
+   <div><span>Legal moves</span><strong>${trace.legalCount}</strong></div>
+   <div><span>Moves noticed</span><strong>${trace.noticedCount}</strong></div>
+   <div><span>Best noticed?</span><strong>${trace.bestWasNoticed?"Yes":"No"}</strong></div>
+   <div><span>Saw reply tactics?</span><strong>${trace.sawConsequences?"Yes":"No"}</strong></div>
    <div><span>Vision</span><strong>${trace.vision}</strong></div>
    <div><span>Calculation</span><strong>${trace.calculation}</strong></div>
    <div><span>Evaluation</span><strong>${trace.evaluation}</strong></div>
    <div><span>Risk tolerance</span><strong>${trace.risk}</strong></div>
   </div>
   <p><b>Plan:</b> ${trace.plan}</p>
-  <div class="candidate-list">${trace.candidates.map((item,index)=>`<div><span>${index+1}. ${item.san}</span><span>${item.score} · ${item.forcingReplies} forcing replies</span></div>`).join("")}</div>`;
+  <div class="candidate-list">${trace.candidates.map((item,index)=>`<div><span>${index+1}. ${item.san}${item.sawConsequences?"":" · consequence missed"}</span><span>${item.score} · skill ${item.skill} · personality ${item.personality}</span></div>`).join("")}</div>
+  <p><b>Not considered:</b> ${trace.missed.length?trace.missed.join(", "):"None"}</p>`;
 }
 function moveEvent(move){
  if(game.isCheckmate())return "mate";

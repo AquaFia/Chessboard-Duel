@@ -276,3 +276,17 @@ Supported intents include emergency defense, development, technical conversion, 
 The selected intent builds a short priority plan. Candidate moves are evaluated against that plan before Elo-based perception noise and candidate breadth are applied. The current intent is also surfaced in the match status text.
 
 The superseded `personalityScore()` and `moveScore()` functions were removed rather than retained as fallback code. Opening identity, adaptive memory, alpha-beta search, dialogue, and match review remain integrated with the new pipeline.
+
+## Phase 12.1 — Perception, Candidate Discovery, and Calibration
+
+Phase 12.1 replaces the assumption that every character seriously analyzes every legal move. The engine now follows one universal sequence for all imported character profiles:
+
+1. Generate legal moves for chess-rule enforcement.
+2. Discover a skill-dependent subset of candidate moves.
+3. Calculate and perceive consequences according to cognitive skill.
+4. Apply personality-driven intent and move preferences.
+5. Choose among the moves the character actually considered.
+
+Lower-skilled players can now omit strong moves, miss reply tactics, and misjudge consequences instead of merely adding noise after complete analysis. Higher-skilled players consider more candidates and perceive tactical replies more reliably. Personality remains equally important through intent, aggression, caution, risk, material preference, positional preference, and plan execution.
+
+The diagnostics panel now reports legal moves, moves noticed, omitted moves, whether the best engine move was noticed, whether reply tactics were perceived, and separate skill/personality contributions.

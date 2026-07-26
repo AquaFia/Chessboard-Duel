@@ -232,3 +232,14 @@ Changes:
 - Added dialogue panel under each portrait.
 - Active speaker card glows.
 - Each character keeps their last spoken line.
+
+## Phase 12.1 — Perception, Candidate Discovery, and Calibration
+
+- Replaced full-board candidate scoring with universal skill-driven candidate discovery.
+- Chess skill now controls how many legal moves are seriously considered and whether reply tactics are perceived.
+- Personality now influences intent and preferences only after candidate discovery and perceived calculation.
+- Added separate skill and personality score components in diagnostics.
+- Added diagnostics for legal moves, noticed moves, omitted moves, objective-best visibility, and missed tactical consequences.
+- Added universal repeated-piece penalties and material-capture safeguards.
+- Removed the obsolete tactical-blindness penalty and plan-reliability blend rather than retaining fallback behavior.
+- No character-name-specific engine rules were added.
