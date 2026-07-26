@@ -1,0 +1,243 @@
+{
+  "schemaVersion": 2,
+  "id": "damian",
+  "name": "Damian Crosse",
+  "shortName": "Damian",
+  "talent": "Ultimate Researcher",
+  "theme": {
+    "primary": "#243b73",
+    "secondary": "#c7ccd8",
+    "panel": "#111827"
+  },
+  "portraits": {},
+  "fallbackPortrait": {
+    "hairTop": "#0b0d12",
+    "hairBottom": "#1b2230",
+    "skin": "#ead8cf",
+    "shirt": "#f2f4f7",
+    "eyes": "#2d2b5f",
+    "accessory": "glasses"
+  },
+  "dialogue": {
+    "opening": [
+      "State the position clearly. Then we can proceed.",
+      "I prefer games with clean records and no invented conclusions."
+    ],
+    "move": [
+      "A provisional improvement.",
+      "That move satisfies the current constraints."
+    ],
+    "capture": [
+      "Removed from the board. Documented.",
+      "That piece failed its risk assessment."
+    ],
+    "check": [
+      "Your king is now the central liability.",
+      "Define your defense. Quickly."
+    ],
+    "checked": [
+      "Unacceptable. Recalculating.",
+      "A temporary procedural failure."
+    ],
+    "winning": [
+      "The evidence is becoming difficult to dispute.",
+      "Your position is collapsing under its own contradictions."
+    ],
+    "losing": [
+      "A poor position is not a final verdict.",
+      "The current data is unfavorable. Not conclusive."
+    ],
+    "mate": [
+      "Verdict reached.",
+      "Checkmate. The method holds."
+    ],
+    "draw": [
+      "An unresolved but defensible conclusion.",
+      "Neither side established sufficient proof."
+    ],
+    "opponentRepeating": [
+      "You have repeated that maneuver. I assume there is a reason.",
+      "Pattern noted. I advise varying your method."
+    ],
+    "underPressure": [
+      "Pressure without precision is merely noise.",
+      "You are mistaking activity for a valid argument."
+    ],
+    "openingDeviation": [
+      "We are leaving known theory. Fine. Define the new premise.",
+      "An early deviation. Interesting, if not necessarily sound."
+    ],
+    "failedPlan": [
+      "That line did not survive review.",
+      "Faulty premise. Correcting the model."
+    ],
+    "retaliation": [
+      "Balance restored.",
+      "A necessary correction."
+    ]
+  },
+  "relationships": {},
+  "openingProfile": {
+    "white": {
+      "freeformWeight": 18,
+      "lines": [
+        {
+          "name": "Queen's Gambit",
+          "moves": [
+            "d4",
+            "d5",
+            "c4"
+          ],
+          "weight": 38
+        },
+        {
+          "name": "London System",
+          "moves": [
+            "d4",
+            "Nf6",
+            "Bf4"
+          ],
+          "weight": 30
+        },
+        {
+          "name": "Ruy Lopez",
+          "moves": [
+            "e4",
+            "e5",
+            "Nf3",
+            "Nc6",
+            "Bb5"
+          ],
+          "weight": 24
+        }
+      ]
+    },
+    "black": {
+      "freeformWeight": 18,
+      "lines": [
+        {
+          "name": "Queen's Gambit Declined",
+          "moves": [
+            "d4",
+            "d5",
+            "c4",
+            "e6"
+          ],
+          "weight": 36
+        },
+        {
+          "name": "Caro-Kann Defense",
+          "moves": [
+            "e4",
+            "c6",
+            "d4",
+            "d5"
+          ],
+          "weight": 30
+        },
+        {
+          "name": "Nimzo-Indian Defense",
+          "moves": [
+            "d4",
+            "Nf6",
+            "c4",
+            "e6",
+            "Nc3",
+            "Bb4"
+          ],
+          "weight": 26
+        }
+      ]
+    }
+  },
+  "defaultExpression": "focused",
+  "expressionMap": {
+    "opening": "composed",
+    "move": "focused",
+    "capture": "satisfied",
+    "check": "severe",
+    "checked": "annoyed",
+    "winning": "composed",
+    "losing": "tense",
+    "mate": "satisfied",
+    "draw": "neutral"
+  },
+  "personalityProfile": {
+    "corePersonality": {
+      "aggression": 64,
+      "riskTolerance": 34,
+      "patience": 82,
+      "creativity": 48,
+      "curiosity": 76,
+      "confidence": 84,
+      "emotionalStability": 68,
+      "adaptability": 55,
+      "persistence": 94,
+      "discipline": 97,
+      "bluffing": 28,
+      "empathy": 36,
+      "competitiveness": 88,
+      "caution": 78,
+      "independence": 91,
+      "leadership": 62,
+      "impulsiveness": 24,
+      "humor": 38
+    },
+    "chessAptitude": {
+      "patternRecognition": 91,
+      "strategicPlanning": 88,
+      "tacticalVision": 76,
+      "calculationPotential": 86,
+      "memory": 94,
+      "spatialReasoning": 78,
+      "longTermPlanning": 89,
+      "intuition": 61,
+      "learningSpeed": 86,
+      "focus": 95,
+      "pressureHandling": 74,
+      "adaptation": 58
+    },
+    "currentChessSkill": {
+      "estimatedElo": "1600–1800",
+      "openingKnowledge": 74,
+      "middlegameKnowledge": 78,
+      "endgameKnowledge": 70,
+      "timeManagement": 72,
+      "openingPreparation": 82,
+      "practicalAccuracy": 76
+    },
+    "playstyle": [
+      "Strategic",
+      "Methodical",
+      "Positional",
+      "Technical",
+      "Defensive",
+      "Counterattacking",
+      "Pragmatic",
+      "Solid",
+      "Psychological"
+    ],
+    "openingPhilosophy": "Damian treats openings as researched systems rather than creative playgrounds. He prefers reputable, well-documented structures with clear plans, durable pawn formations, and low tolerance for unsound improvisation. He studies theory because preparation proves respect for the game and because an opening without a method is, to him, just a sequence of unjustified claims. When forced out of book, he does not panic, but he becomes visibly sharper and more judgmental, trying to define the new position by source, structure, weakness, and limit.",
+    "signatureBehaviors": [
+      "Keeps the position orderly unless disorder is objectively useful",
+      "Punishes weak premises rather than chasing flashy attacks",
+      "Prefers improving moves with clear justification",
+      "Documents repeated opponent habits mentally",
+      "Targets overextended pieces as if cross-examining them",
+      "Gets irritated by unsound gambits but still verifies them carefully",
+      "Simplifies when ahead unless a stronger technical squeeze exists",
+      "Refuses to concede until the conclusion is mathematically unavoidable",
+      "Becomes more clinical after being embarrassed",
+      "Adjusts his glasses before difficult defensive calculations",
+      "Uses the endgame as a proof stage",
+      "Values clean conversion over spectacle",
+      "Can miss simple practical human tricks while auditing complex structure",
+      "Treats chess as cognitive maintenance and self-measurement",
+      "Corrects the opponent's assumptions through moves rather than speeches"
+    ],
+    "dialogueStyle": "Damian speaks in precise, formal, evidence-first language with a controlled cadence and occasional clipped verdicts. He uses research, law, audit, method, proof, liability, and citation vocabulary, often converting chess events into claims that must survive review. He is usually quiet between moves, but becomes sharply verbal when an opponent repeats a weakness, plays an unsound idea, or threatens his sense of control. His humor is dry, pedantic, and faintly dramatic, especially when a position is inefficient or beneath his standards.",
+    "expressionStyle": "Damian begins composed and watchful, with narrow focused eyes and minimal visible emotion. In calculation he becomes almost statue-still, occasionally adjusting his glasses or lowering his gaze as if reviewing a file. Confidence appears as a small, restrained satisfaction rather than a grin; frustration appears through long-suffering sighs, tighter posture, and colder diction. When losing, his expression hardens into controlled tension rather than panic, and defeat lands as a silent, bitter acceptance of a conclusion he cannot refute.",
+    "engineNotes": "Prioritize solid development, structural soundness, prophylaxis, central control, piece coordination, and technically justified exchanges. Damian should prefer medium-to-long games where preparation, method, and endgame discipline matter. He should avoid chaotic speculative sacrifices unless calculation clearly supports them, and he should respond to unsound aggression by absorbing pressure and counterattacking the weak premise. Increase his accuracy in quiet, structured positions and endgames; decrease flexibility in strange tactical scrambles or positions that require intuitive messiness. Dialogue should be sparse at first, then sharper when he identifies errors, contradictions, repeated moves, or methodological failures. Emotional state should narrow under stress: less warmth, more definitions, more clipped verdicts.",
+    "designerNotes": "Damian should not feel like a generic genius or cold villain. His chess identity is method as morality: every move should seem researched, justified, and filed into a larger argument. He is strong because he studies, remembers, organizes, and refuses sloppy conclusions, but his rigidity, pride, and discomfort with chaos prevent him from becoming effortless. He is most entertaining when the opponent tries to drag him into disorder and he attempts to put the entire board back into a courtroom."
+  }
+}
