@@ -1,0 +1,244 @@
+{
+  "schemaVersion": 2,
+  "id": "daika",
+  "name": "Daika Yume Nori",
+  "shortName": "Daika",
+  "talent": "Ultimate Empath",
+  "theme": {
+    "primary": "#f7a8d8",
+    "secondary": "#f4c46f",
+    "panel": "#21172d"
+  },
+  "portraits": {},
+  "fallbackPortrait": {
+    "hairTop": "#f6d36b",
+    "hairBottom": "#d99a4a",
+    "skin": "#f2c7ad",
+    "shirt": "#f6a4c9",
+    "eyes": "#c46b3a",
+    "accessory": "prism"
+  },
+  "dialogue": {
+    "opening": [
+      "Take a breath first. Then we can begin.",
+      "It is okay. We will find the safest way through."
+    ],
+    "move": [
+      "That feels a little steadier.",
+      "One careful step at a time."
+    ],
+    "capture": [
+      "I am sorry. That piece was hurting the position.",
+      "I did not want to take it, but leaving it there was worse."
+    ],
+    "check": [
+      "Check. Please be careful with your king.",
+      "Your king is in danger. Let us slow down."
+    ],
+    "checked": [
+      "Oh—okay. I hear the warning.",
+      "That is frightening, but not final."
+    ],
+    "winning": [
+      "The board feels calmer now.",
+      "I think the position is starting to breathe again."
+    ],
+    "losing": [
+      "This is difficult, but I am still here.",
+      "I need a gentler way out of this."
+    ],
+    "mate": [
+      "Checkmate. I hope that did not feel too harsh.",
+      "That is the end. Thank you for staying with it."
+    ],
+    "draw": [
+      "Maybe neither of us needed to break today.",
+      "A draw can still be a peaceful answer."
+    ],
+    "opponentRepeating": [
+      "You keep returning to that piece. Is something there worrying you?",
+      "That path keeps coming back. I should listen to it."
+    ],
+    "underPressure": [
+      "It is getting loud in here. Breathe, then answer.",
+      "I can feel the pressure. I just need one safe step."
+    ],
+    "openingDeviation": [
+      "Oh, we are leaving the familiar path. That is okay.",
+      "Different route, same goal: keep everyone safe."
+    ],
+    "failedPlan": [
+      "That did not help the way I hoped. Let me try another angle.",
+      "I misread the feeling of that position. I can adjust."
+    ],
+    "retaliation": [
+      "I am answering the harm, not trying to hurt you.",
+      "You pushed too hard. I have to restore balance."
+    ]
+  },
+  "relationships": {},
+  "openingProfile": {
+    "white": {
+      "freeformWeight": 42,
+      "lines": [
+        {
+          "name": "Italian Game",
+          "moves": [
+            "e4",
+            "e5",
+            "Nf3",
+            "Nc6",
+            "Bc4"
+          ],
+          "weight": 30
+        },
+        {
+          "name": "Queen's Pawn Game",
+          "moves": [
+            "d4",
+            "d5",
+            "Nf3"
+          ],
+          "weight": 24
+        },
+        {
+          "name": "London System",
+          "moves": [
+            "d4",
+            "d5",
+            "Bf4"
+          ],
+          "weight": 20
+        }
+      ]
+    },
+    "black": {
+      "freeformWeight": 42,
+      "lines": [
+        {
+          "name": "Caro-Kann Defense",
+          "moves": [
+            "e4",
+            "c6",
+            "d4",
+            "d5"
+          ],
+          "weight": 28
+        },
+        {
+          "name": "Queen's Gambit Declined",
+          "moves": [
+            "d4",
+            "d5",
+            "c4",
+            "e6"
+          ],
+          "weight": 24
+        },
+        {
+          "name": "Four Knights Game",
+          "moves": [
+            "e4",
+            "e5",
+            "Nf3",
+            "Nc6",
+            "Nc3",
+            "Nf6"
+          ],
+          "weight": 18
+        }
+      ]
+    }
+  },
+  "defaultExpression": "gentle",
+  "expressionMap": {
+    "opening": "gentle",
+    "move": "focused",
+    "capture": "worried",
+    "check": "concerned",
+    "checked": "surprised",
+    "winning": "relieved",
+    "losing": "worried",
+    "mate": "soft",
+    "draw": "relieved"
+  },
+  "personalityProfile": {
+    "corePersonality": {
+      "aggression": 18,
+      "riskTolerance": 31,
+      "patience": 86,
+      "creativity": 62,
+      "curiosity": 72,
+      "confidence": 54,
+      "emotionalStability": 76,
+      "adaptability": 82,
+      "persistence": 78,
+      "discipline": 67,
+      "bluffing": 15,
+      "empathy": 100,
+      "competitiveness": 42,
+      "caution": 79,
+      "independence": 41,
+      "leadership": 66,
+      "impulsiveness": 32,
+      "humor": 58
+    },
+    "chessAptitude": {
+      "patternRecognition": 83,
+      "strategicPlanning": 71,
+      "tacticalVision": 58,
+      "calculationPotential": 65,
+      "memory": 69,
+      "spatialReasoning": 61,
+      "longTermPlanning": 74,
+      "intuition": 91,
+      "learningSpeed": 78,
+      "focus": 73,
+      "pressureHandling": 80,
+      "adaptation": 84
+    },
+    "currentChessSkill": {
+      "estimatedElo": "1000-1200",
+      "openingKnowledge": 42,
+      "middlegameKnowledge": 56,
+      "endgameKnowledge": 48,
+      "timeManagement": 64,
+      "openingPreparation": 45,
+      "practicalAccuracy": 57
+    },
+    "playstyle": [
+      "Defensive",
+      "Positional",
+      "Resourceful",
+      "Solid",
+      "Balanced",
+      "Patient",
+      "Pragmatic",
+      "Counterattacking",
+      "Psychological",
+      "Supportive"
+    ],
+    "openingPhilosophy": "Daika approaches openings as a way to make the board feel safe before conflict escalates. She prefers calm development, stable pawn structures, early king safety, and familiar routes that reduce emotional noise. She is willing to adapt when the opponent leaves theory, but she does not seek chaos for its own sake; her ideal opening creates enough structure that both danger and response can be understood gently.",
+    "signatureBehaviors": [
+      "Develops pieces calmly before attacking",
+      "Protects her king early",
+      "Avoids unnecessary sacrifices",
+      "Prefers stable pawn structures",
+      "Looks for the move that reduces tension",
+      "Finds defensive resources under pressure",
+      "Counterattacks only after the opponent overextends",
+      "Hesitates before capturing unless the capture clearly helps",
+      "Uses quiet improving moves to calm the position",
+      "Notices repeated opponent patterns quickly",
+      "Struggles to deliver harsh finishing blows",
+      "Offers trades when the board feels overheated",
+      "Keeps playing gently even when winning",
+      "Becomes stronger when protecting a vulnerable position",
+      "Treats every threat as a signal to understand rather than a reason to panic"
+    ],
+    "dialogueStyle": "Daika speaks softly, warmly, and carefully, using breath, safety, balance, harm, worry, and next-step language. She rarely taunts and often sounds apologetic even when making strong moves. Her dialogue becomes more focused under pressure, more reassuring when losing, and quietly relieved when winning. She compliments sincerely and frames chess conflict as something to guide through rather than dominate.",
+    "expressionStyle": "Daika begins with a gentle, receptive expression and grows more focused as she reads the emotional shape of the game. Surprise appears as wide-eyed concern, frustration as quiet worry, and determination as soft but firm stillness. When winning she looks relieved rather than smug, and when losing she looks hurt but steady, as if trying to keep the board and herself from falling apart.",
+    "engineNotes": "Prioritize king safety, solid development, defensive resources, tension reduction, and moves that stabilize the position. Daika should avoid speculative sacrifices, reckless pawn storms, and unnecessary complications, but she should become resourceful when defending or protecting a vulnerable position. Her move selector should favor safe improvements, prophylaxis, trades that reduce danger, and counterattacks only after the opponent creates clear weaknesses. Dialogue should be gentle and moderately frequent, increasing when the position becomes tense or when she is checked. Emotional state should remain steadier than most characters, but visible concern should rise when pieces become endangered or the board becomes chaotic.",
+    "designerNotes": "Daika should not feel like a weak player just because she is gentle. Her chess personality is protective, intuitive, and emotionally intelligent: she reads danger early, calms chaotic positions, and finds humane-looking defensive resources. Her weakness is reluctance to harm, low aggression, and hesitation when a decisive capture or attack is required. She is most authentic as a soft guardian opponent who wins by keeping the board alive, safe, and balanced until the opponent's own pressure becomes the thing that fails."
+  }
+}

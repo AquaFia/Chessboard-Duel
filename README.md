@@ -233,3 +233,16 @@ retaliation
 
 Relationship-specific dialogue may override these events in the same way as
 other dialogue. When no contextual line exists, the normal move event is used.
+
+## Phase 10 — Human Strength Simulation
+
+Phase 10 separates chess strength from personality. Estimated Elo now controls search depth, evaluation noise, candidate breadth, and conversion reliability. Stronger characters calculate farther and preserve winning advantages more consistently, while weaker characters make believable mistakes shaped by their own personality.
+
+Key changes:
+
+- Elo-driven 1–3 ply alpha-beta search
+- Character-specific evaluation noise
+- Skill-sensitive candidate selection
+- Draw, repetition, and stalemate penalties while winning
+- Conversion strength derived from endgame knowledge, practical accuracy, and discipline
+- Personality now distorts perception without overpowering large objective differences
