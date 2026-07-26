@@ -194,17 +194,24 @@
       "intuition": 61,
       "learningSpeed": 86,
       "focus": 95,
-      "pressureHandling": 74,
-      "adaptation": 58
+      "composureUnderPressure": 74,
+      "adaptationDuringGames": 58
     },
     "currentChessSkill": {
-      "estimatedElo": "1600–1800",
+      "estimatedElo": "1600\u20131800",
+      "candidateAwareness": 50,
+      "threatDetection": 50,
+      "tacticalVision": 50,
+      "calculation": 50,
+      "evaluationAccuracy": 50,
+      "patternRecognition": 50,
+      "planning": 50,
       "openingKnowledge": 74,
       "middlegameKnowledge": 78,
       "endgameKnowledge": 70,
-      "timeManagement": 72,
-      "openingPreparation": 82,
-      "practicalAccuracy": 76
+      "conversion": 50,
+      "practicalAccuracy": 76,
+      "timeManagement": 72
     },
     "playstyle": [
       "Strategic",
@@ -250,6 +257,27 @@
       "confidence": 66,
       "adaptability": 91,
       "riskTolerance": 30
+    },
+    "behaviorModel": {
+      "captureConfidence": 50,
+      "simplificationPreference": 50,
+      "complicationPreference": 50,
+      "initiativePreference": 50,
+      "defensivePreference": 50,
+      "materialGreed": 50,
+      "sacrificeWillingness": 50,
+      "queenActivity": 50,
+      "pieceProtection": 50,
+      "developmentPriority": 50
+    },
+    "decisionModel": {
+      "intuitionReliance": 50,
+      "calculationReliance": 50,
+      "planCommitment": 50,
+      "planFlexibility": 50,
+      "psychologicalPlay": 50,
+      "moveSpeed": 50,
+      "overthinking": 50
     }
   }
 }
