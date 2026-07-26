@@ -36,7 +36,7 @@
       "Your king is in danger. Let us slow down."
     ],
     "checked": [
-      "Oh—okay. I hear the warning.",
+      "Oh\u2014okay. I hear the warning.",
       "That is frightening, but not final."
     ],
     "winning": [
@@ -194,17 +194,24 @@
       "intuition": 91,
       "learningSpeed": 78,
       "focus": 73,
-      "pressureHandling": 80,
-      "adaptation": 84
+      "composureUnderPressure": 80,
+      "adaptationDuringGames": 84
     },
     "currentChessSkill": {
       "estimatedElo": "1000-1200",
+      "candidateAwareness": 50,
+      "threatDetection": 50,
+      "tacticalVision": 50,
+      "calculation": 50,
+      "evaluationAccuracy": 50,
+      "patternRecognition": 50,
+      "planning": 50,
       "openingKnowledge": 42,
       "middlegameKnowledge": 56,
       "endgameKnowledge": 48,
-      "timeManagement": 64,
-      "openingPreparation": 45,
-      "practicalAccuracy": 57
+      "conversion": 50,
+      "practicalAccuracy": 57,
+      "timeManagement": 64
     },
     "playstyle": [
       "Defensive",
@@ -251,6 +258,27 @@
       "confidence": 43,
       "adaptability": 66,
       "riskTolerance": 10
+    },
+    "behaviorModel": {
+      "captureConfidence": 50,
+      "simplificationPreference": 50,
+      "complicationPreference": 50,
+      "initiativePreference": 50,
+      "defensivePreference": 50,
+      "materialGreed": 50,
+      "sacrificeWillingness": 50,
+      "queenActivity": 50,
+      "pieceProtection": 50,
+      "developmentPriority": 50
+    },
+    "decisionModel": {
+      "intuitionReliance": 50,
+      "calculationReliance": 50,
+      "planCommitment": 50,
+      "planFlexibility": 50,
+      "psychologicalPlay": 50,
+      "moveSpeed": 50,
+      "overthinking": 50
     }
   }
 }

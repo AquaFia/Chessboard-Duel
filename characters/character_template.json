@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 50,
+  "id": "",
+  "name": "",
+  "shortName": "",
+  "talent": "",
+  "theme": {
+    "primary": "",
+    "secondary": "",
+    "panel": ""
+  },
+  "portraits": {},
+  "fallbackPortrait": {
+    "hairTop": "",
+    "hairBottom": "",
+    "skin": "",
+    "shirt": "",
+    "eyes": "",
+    "accessory": ""
+  },
+  "dialogue": {
+    "opening": [],
+    "move": [],
+    "capture": [],
+    "check": [],
+    "checked": [],
+    "winning": [],
+    "losing": [],
+    "mate": [],
+    "draw": [],
+    "opponentRepeating": [],
+    "underPressure": [],
+    "openingDeviation": [],
+    "failedPlan": [],
+    "retaliation": []
+  },
+  "relationships": {
+    "jace": {
+      "opening": [],
+      "move": [],
+      "capture": [],
+      "check": [],
+      "win": [],
+      "lose": [],
+      "draw": []
+    }
+  },
+  "openingProfile": {
+    "white": {
+      "freeformWeight": 50,
+      "lines": []
+    },
+    "black": {
+      "freeformWeight": 50,
+      "lines": []
+    }
+  },
+  "defaultExpression": "",
+  "expressionMap": {
+    "opening": "",
+    "move": "",
+    "capture": "",
+    "check": "",
+    "checked": "",
+    "winning": "",
+    "losing": "",
+    "mate": "",
+    "draw": ""
+  },
+  "personalityProfile": {
+    "corePersonality": {
+      "aggression": 50,
+      "riskTolerance": 50,
+      "patience": 50,
+      "creativity": 50,
+      "curiosity": 50,
+      "confidence": 50,
+      "emotionalStability": 50,
+      "adaptability": 50,
+      "persistence": 50,
+      "discipline": 50,
+      "bluffing": 50,
+      "empathy": 50,
+      "competitiveness": 50,
+      "caution": 50,
+      "independence": 50,
+      "leadership": 50,
+      "impulsiveness": 50,
+      "humor": 50
+    },
+    "chessAptitude": {
+      "patternRecognition": 50,
+      "strategicPlanning": 50,
+      "tacticalVision": 50,
+      "calculationPotential": 50,
+      "memory": 50,
+      "spatialReasoning": 50,
+      "longTermPlanning": 50,
+      "intuition": 50,
+      "learningSpeed": 50,
+      "focus": 50,
+      "composureUnderPressure": 50,
+      "adaptationDuringGames": 50
+    },
+    "currentChessSkill": {
+      "estimatedElo": "",
+      "candidateAwareness": 50,
+      "threatDetection": 50,
+      "tacticalVision": 50,
+      "calculation": 50,
+      "evaluationAccuracy": 50,
+      "patternRecognition": 50,
+      "planning": 50,
+      "openingKnowledge": 50,
+      "middlegameKnowledge": 50,
+      "endgameKnowledge": 50,
+      "conversion": 50,
+      "practicalAccuracy": 50,
+      "timeManagement": 50
+    },
+    "playstyle": [],
+    "openingPhilosophy": "",
+    "signatureBehaviors": [],
+    "dialogueStyle": "",
+    "expressionStyle": "",
+    "engineNotes": "",
+    "designerNotes": "",
+    "cognitiveModel": {
+      "vision": 50,
+      "calculation": 50,
+      "evaluation": 50,
+      "planning": 50,
+      "conversion": 50,
+      "defense": 50,
+      "initiative": 50,
+      "confidence": 50,
+      "adaptability": 50,
+      "riskTolerance": 50
+    },
+    "behaviorModel": {
+      "captureConfidence": 50,
+      "simplificationPreference": 50,
+      "complicationPreference": 50,
+      "initiativePreference": 50,
+      "defensivePreference": 50,
+      "materialGreed": 50,
+      "sacrificeWillingness": 50,
+      "queenActivity": 50,
+      "pieceProtection": 50,
+      "developmentPriority": 50
+    },
+    "decisionModel": {
+      "intuitionReliance": 50,
+      "calculationReliance": 50,
+      "planCommitment": 50,
+      "planFlexibility": 50,
+      "psychologicalPlay": 50,
+      "moveSpeed": 50,
+      "overthinking": 50
+    }
+  }
+}

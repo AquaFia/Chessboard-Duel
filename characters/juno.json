@@ -20,7 +20,7 @@
   },
   "dialogue": {
     "opening": [
-      "Let’s establish control before anyone invents a narrative.",
+      "Let\u2019s establish control before anyone invents a narrative.",
       "The first move sets audience expectations."
     ],
     "move": [
@@ -64,7 +64,7 @@
       "Yes, I see the campaign. I am adjusting."
     ],
     "openingDeviation": [
-      "We are off-script. Fine—I improvise better anyway.",
+      "We are off-script. Fine\u2014I improvise better anyway.",
       "Theory has left the room. Presentation still matters."
     ],
     "failedPlan": [
@@ -221,17 +221,24 @@
       "intuition": 89,
       "learningSpeed": 87,
       "focus": 64,
-      "pressureHandling": 66,
-      "adaptation": 88
+      "composureUnderPressure": 66,
+      "adaptationDuringGames": 88
     },
     "currentChessSkill": {
-      "estimatedElo": "1400–1600",
+      "estimatedElo": "1400\u20131600",
+      "candidateAwareness": 50,
+      "threatDetection": 50,
+      "tacticalVision": 50,
+      "calculation": 50,
+      "evaluationAccuracy": 50,
+      "patternRecognition": 50,
+      "planning": 50,
       "openingKnowledge": 58,
       "middlegameKnowledge": 76,
       "endgameKnowledge": 49,
-      "timeManagement": 62,
-      "openingPreparation": 66,
-      "practicalAccuracy": 70
+      "conversion": 50,
+      "practicalAccuracy": 70,
+      "timeManagement": 62
     },
     "playstyle": [
       "Psychological",
@@ -274,6 +281,27 @@
       "confidence": 86,
       "adaptability": 79,
       "riskTolerance": 72
+    },
+    "behaviorModel": {
+      "captureConfidence": 50,
+      "simplificationPreference": 50,
+      "complicationPreference": 50,
+      "initiativePreference": 50,
+      "defensivePreference": 50,
+      "materialGreed": 50,
+      "sacrificeWillingness": 50,
+      "queenActivity": 50,
+      "pieceProtection": 50,
+      "developmentPriority": 50
+    },
+    "decisionModel": {
+      "intuitionReliance": 50,
+      "calculationReliance": 50,
+      "planCommitment": 50,
+      "planFlexibility": 50,
+      "psychologicalPlay": 50,
+      "moveSpeed": 50,
+      "overthinking": 50
     }
   }
 }
