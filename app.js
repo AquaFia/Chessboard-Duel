@@ -38,7 +38,7 @@ async function loadCharacters(){
 }
 
 function validateCharacter(character,file){
- const required=["corePersonality","chessAptitude","currentChessSkill","playstyle","signatureBehaviors"];
+ const required=["corePersonality","chessAptitude","currentChessSkill","playstyle","signatureBehaviors","cognitiveModel"];
  if(!character.id)throw new Error(`${file} is missing id.`);
  if(!character.dialogue)throw new Error(`${character.id} is missing dialogue.`);
  if(!character.personalityProfile)throw new Error(`${character.id} is missing personalityProfile.`);
@@ -213,47 +213,53 @@ function minimax(depth,alpha,beta,rootColor){
 }
 const clamp01=n=>Math.max(0,Math.min(1,Number(n)||0));
 const pct=n=>clamp01((Number(n)||0)/100);
-function eloMidpoint(value){
- const nums=String(value||"").match(/\d+/g)?.map(Number)||[];
- if(nums.length>=2)return (nums[0]+nums[1])/2;
- return nums[0]||1200;
-}
 function includesText(items,text){
  return (items||[]).some(item=>String(item).toLowerCase().includes(text));
+}
+function cognitiveValue(model,key,fallback=50){
+ const value=Number(model?.[key]);
+ return Number.isFinite(value)?Math.max(0,Math.min(100,value)):fallback;
 }
 function generateBrain(c){
  const p=c.personalityProfile;
  const core=p.corePersonality;
  const apt=p.chessAptitude;
- const skill=p.currentChessSkill;
  const styles=p.playstyle;
  const signatures=p.signatureBehaviors;
- const elo=eloMidpoint(skill.estimatedElo);
+ const model=p.cognitiveModel;
  const tacticalStyle=includesText(styles,"tactical")||includesText(styles,"trickster");
  const strategicStyle=includesText(styles,"strategic")||includesText(styles,"positional");
  const chaoticStyle=includesText(styles,"chaotic")||includesText(styles,"creative");
  const defensiveStyle=includesText(styles,"defensive")||includesText(styles,"solid");
- const queenPreference=includesText(signatures,"queen")?0.95:0.5;
- const dislikesDraws=includesText(signatures,"draw")?0.9:0.35;
-
+ const vision=pct(cognitiveValue(model,"vision"));
+ const calculation=pct(cognitiveValue(model,"calculation"));
+ const evaluation=pct(cognitiveValue(model,"evaluation"));
+ const planning=pct(cognitiveValue(model,"planning"));
+ const conversion=pct(cognitiveValue(model,"conversion"));
+ const defense=pct(cognitiveValue(model,"defense"));
+ const initiative=pct(cognitiveValue(model,"initiative"));
+ const confidence=pct(cognitiveValue(model,"confidence"));
+ const adaptability=pct(cognitiveValue(model,"adaptability"));
+ const risk=pct(cognitiveValue(model,"riskTolerance"));
+ const searchDepth=calculation>=.84?3:calculation>=.56?2:1;
  return {
-  elo,
-  searchDepth:elo>=1650?3:elo>=1250?2:1,
-  evaluationNoise:Math.max(8,105-(elo-900)*.095),
-  conversion:clamp01(pct(skill.endgameKnowledge)*.45+pct(skill.practicalAccuracy)*.35+pct(core.discipline)*.2),
-  aggression:clamp01(pct(core.aggression)*.55+pct(core.competitiveness)*.2+(includesText(styles,"aggressive")?.25:0)),
-  tactics:clamp01(pct(apt.tacticalVision)*.55+pct(apt.patternRecognition)*.2+(tacticalStyle?.25:0)),
-  positional:clamp01(pct(apt.strategicPlanning)*.45+pct(apt.longTermPlanning)*.3+(strategicStyle?.25:0)),
-  material:clamp01(.72-pct(core.riskTolerance)*.35-pct(core.curiosity)*.12),
-  kingSafety:clamp01(.78+pct(core.caution)*.2-pct(core.riskTolerance)*.35+(defensiveStyle?.15:0)),
-  risk:pct(core.riskTolerance),
-  novelty:clamp01(pct(core.creativity)*.45+pct(core.curiosity)*.4+(chaoticStyle?.15:0)),
-  randomness:clamp01(.08+(1-pct(skill.practicalAccuracy))*.38+pct(core.impulsiveness)*.18),
-  blunderChance:clamp01(.008+(1-pct(skill.practicalAccuracy))*.055+(1-pct(core.discipline))*.02),
-  complexity:clamp01(pct(core.creativity)*.25+pct(core.riskTolerance)*.25+pct(core.curiosity)*.2+(chaoticStyle?.3:0)),
-  queenPreference,
-  simplification:clamp01(pct(core.caution)*.35+pct(apt.longTermPlanning)*.25+(defensiveStyle?.25:0)-dislikesDraws*.2),
-  pressure:clamp01(pct(core.bluffing)*.4+pct(core.confidence)*.25+pct(core.aggression)*.2+(includesText(styles,"psychological")?.15:0))
+  vision,calculation,evaluation,planning,conversion,defense,initiative,confidence,adaptability,risk,
+  searchDepth,
+  evaluationNoise:8+(1-evaluation)*86+(1-vision)*30,
+  tacticalBlindness:clamp01((1-vision)*.62+(1-calculation)*.38),
+  planReliability:clamp01(planning*.62+adaptability*.24+evaluation*.14),
+  aggression:clamp01(pct(core.aggression)*.46+pct(core.competitiveness)*.16+initiative*.28+(includesText(styles,"aggressive")?.1:0)),
+  tactics:clamp01(pct(apt.tacticalVision)*.32+pct(apt.patternRecognition)*.16+vision*.28+calculation*.16+(tacticalStyle?.08:0)),
+  positional:clamp01(pct(apt.strategicPlanning)*.28+pct(apt.longTermPlanning)*.22+planning*.32+evaluation*.12+(strategicStyle?.06:0)),
+  material:clamp01(.76-risk*.34-pct(core.curiosity)*.1),
+  kingSafety:clamp01(defense*.58+pct(core.caution)*.26-risk*.18+(defensiveStyle?.12:0)),
+  novelty:clamp01(pct(core.creativity)*.34+pct(core.curiosity)*.3+adaptability*.2+(chaoticStyle?.16:0)),
+  randomness:clamp01(.04+(1-evaluation)*.28+(1-calculation)*.18+pct(core.impulsiveness)*.13),
+  blunderChance:clamp01(.004+(1-vision)*.075+(1-calculation)*.055+(1-evaluation)*.03),
+  complexity:clamp01(pct(core.creativity)*.22+risk*.26+pct(core.curiosity)*.18+initiative*.2+(chaoticStyle?.14:0)),
+  queenPreference:includesText(signatures,"queen")?.95:.5,
+  simplification:clamp01(defense*.34+pct(core.caution)*.28+planning*.2-risk*.18),
+  pressure:clamp01(pct(core.bluffing)*.3+confidence*.22+initiative*.3+pct(core.aggression)*.12+(includesText(styles,"psychological")?.06:0))
  };
 }
 function brainFor(c){
@@ -440,7 +446,7 @@ function selectIntent(character,analysis){
  analysis.candidateIntents=candidates.slice(0,4);
  const top=candidates.slice(0,Math.min(3,candidates.length));
  const best=top[0].score;
- const temperature=24+brain.randomness*38;
+ const temperature=18+(1-brain.planning)*34+brain.randomness*24;
  const weights=top.map(item=>Math.exp((item.score-best)/temperature));
  let roll=seedRng()*weights.reduce((sum,item)=>sum+item,0);
  for(let index=0;index<top.length;index++){
@@ -533,13 +539,21 @@ function planScore(move,position,plan,character){
 }
 function perceivedCandidateScore(move,position,plan,character){
  const brain=brainFor(character);
- let score=planScore(move,position,plan,character)+memoryScore(move,character,position);
+ const objective=position.searchScore+position.material*(.35+brain.material*.35);
+ const planned=planScore(move,position,plan,character)+memoryScore(move,character,position);
+ let score=objective+(planned-objective)*brain.planReliability;
  let noise=(seedRng()-.5)*2*brain.evaluationNoise;
- if(plan.intent==="kingsideAttack"&&position.check)noise+=brain.evaluationNoise*.32;
- if(plan.intent==="reduceDanger"&&position.castles)noise+=brain.evaluationNoise*.28;
- if(plan.intent==="createComplications"&&position.replyCount>18)noise+=brain.evaluationNoise*.26;
+ if(plan.intent==="kingsideAttack"&&position.check)noise+=brain.evaluationNoise*.24*brain.confidence;
+ if(plan.intent==="reduceDanger"&&position.castles)noise+=brain.evaluationNoise*.18*brain.defense;
+ if(plan.intent==="createComplications"&&position.replyCount>18)noise+=brain.evaluationNoise*.2*brain.risk;
+ if(position.forcingReplies>0&&seedRng()<brain.tacticalBlindness){
+  score-=position.forcingReplies*(18+52*brain.tacticalBlindness);
+ }
+ if(move.captured&&seedRng()<brain.tacticalBlindness*.22){
+  score-=(value[move.captured]||0)*(.12+.2*brain.tacticalBlindness);
+ }
  score+=noise;
- if(seedRng()<brain.blunderChance)score-=90+seedRng()*(110+brain.evaluationNoise*2.2);
+ if(seedRng()<brain.blunderChance)score-=100+seedRng()*(130+brain.evaluationNoise*2.4);
  return score;
 }
 function weightedOpeningChoice(options,freeformWeight){
@@ -612,20 +626,48 @@ function chooseMove(c){
  c._positionAnalysis=analysis;
  const ranked=moves.map(move=>{
   const position=chessScore(move,c);
-  return {m:move,s:perceivedCandidateScore(move,position,plan,c)};
+  return {m:move,s:perceivedCandidateScore(move,position,plan,c),position};
  }).sort((a,b)=>b.s-a.s);
- const skillControl=clamp01((brain.elo-900)/900);
- const breadth=Math.max(1,Math.min(ranked.length,Math.round(6-4*skillControl+brain.randomness*2)));
+ const cognitiveControl=clamp01(brain.vision*.34+brain.calculation*.36+brain.evaluation*.3);
+ const breadth=Math.max(1,Math.min(ranked.length,Math.round(7-5*cognitiveControl+brain.randomness*2.5)));
  const pool=ranked.slice(0,breadth);
- const temperature=.28+brain.randomness*1.15+(1-skillControl)*.35;
+ const temperature=.22+brain.randomness*1.05+(1-cognitiveControl)*.55+(1-brain.confidence)*.18;
  const best=pool[0].s;
  const weights=pool.map(item=>Math.exp((item.s-best)/Math.max(18,55*temperature)));
  let roll=seedRng()*weights.reduce((sum,item)=>sum+item,0);
+ let chosen=pool[0];
  for(let index=0;index<pool.length;index++){
   roll-=weights[index];
-  if(roll<=0)return pool[index].m;
+  if(roll<=0){chosen=pool[index];break;}
  }
- return pool[0].m;
+ c._cognitiveTrace={
+  intent,plan:plan.priorities.join(" → "),
+  confidence:Math.round(brain.confidence*100),vision:Math.round(brain.vision*100),
+  calculation:Math.round(brain.calculation*100),evaluation:Math.round(brain.evaluation*100),
+  risk:Math.round(brain.risk*100),chosen:chosen.m.san,
+  candidates:ranked.slice(0,5).map(item=>({san:item.m.san,score:Math.round(item.s),forcingReplies:item.position.forcingReplies}))
+ };
+ renderDiagnostics(c);
+ return chosen.m;
+}
+function renderDiagnostics(character){
+ const panel=$("#diagnosticsPanel");
+ if(!panel||panel.hidden)return;
+ const trace=character?._cognitiveTrace;
+ if(!trace){$("#diagnosticsBody").textContent="No AI decision has been recorded yet.";return;}
+ $("#diagnosticsBody").innerHTML=`
+  <div class="diagnostic-grid">
+   <div><span>Character</span><strong>${character.shortName||character.name}</strong></div>
+   <div><span>Intent</span><strong>${String(trace.intent).replace(/([A-Z])/g," $1")}</strong></div>
+   <div><span>Chosen move</span><strong>${trace.chosen}</strong></div>
+   <div><span>Confidence</span><strong>${trace.confidence}%</strong></div>
+   <div><span>Vision</span><strong>${trace.vision}</strong></div>
+   <div><span>Calculation</span><strong>${trace.calculation}</strong></div>
+   <div><span>Evaluation</span><strong>${trace.evaluation}</strong></div>
+   <div><span>Risk tolerance</span><strong>${trace.risk}</strong></div>
+  </div>
+  <p><b>Plan:</b> ${trace.plan}</p>
+  <div class="candidate-list">${trace.candidates.map((item,index)=>`<div><span>${index+1}. ${item.san}</span><span>${item.score} · ${item.forcingReplies} forcing replies</span></div>`).join("")}</div>`;
 }
 function moveEvent(move){
  if(game.isCheckmate())return "mate";
@@ -1013,6 +1055,7 @@ function startGame(){
   delete character._mood;
   delete character._openingName;
   delete character._usedOpeningMove;
+  delete character._cognitiveTrace;
  });
  config={
   white:chars[$("#whiteCharacter").value],black:chars[$("#blackCharacter").value],
@@ -1044,6 +1087,12 @@ $("#play").onclick=()=>{running=!running;running?scheduleAi():pauseMatch()};
 $("#lastMove").onclick=rewindOneMove;
 $("#nextMove").onclick=playNextAiMove;
 $("#delay").oninput=updateDelayLabel;
+$("#diagnosticsToggle").onclick=()=>{
+ const panel=$("#diagnosticsPanel");
+ panel.hidden=!panel.hidden;
+ $("#diagnosticsToggle").textContent=panel.hidden?"AI Diagnostics":"Hide Diagnostics";
+ if(!panel.hidden)renderDiagnostics(game.turn()==="w"?config.white:config.black);
+};
 $("#newGame").onclick=()=>{
  pauseMatch();
  startGame();

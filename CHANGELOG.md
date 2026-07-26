@@ -1,3 +1,13 @@
+# Phase 12 — Cognitive Architecture
+
+- Replaced Elo-based strength control with explicit per-character cognitive profiles.
+- Added vision, calculation, evaluation, planning, conversion, defense, initiative, confidence, adaptability, and risk tolerance.
+- Removed the obsolete Elo midpoint pipeline and its move-selection controls.
+- Added cognitive tactical blindness, skill-specific evaluation noise, plan reliability, candidate breadth, and mistake behavior.
+- Rebalanced Daika so caution does not translate into expert tactical defense or conversion.
+- Added a hidden-by-default AI Diagnostics panel for intent, plan, cognitive values, candidate scores, and the chosen move.
+- Kept intent-based chess, opening identity, adaptive memory, chemistry, dialogue, and match review as active systems.
+
 # Changelog
 
 ## Phase 11 — Intent-Based Chess

@@ -37,6 +37,7 @@
    <button id="lastMove">← Last Move</button>
    <button id="nextMove">Next Move →</button>
    <button id="newGame">Rematch</button>
+   <button id="diagnosticsToggle">AI Diagnostics</button>
    <label class="speed-control" for="delay">
     <span>Reading speed</span>
     <input id="delay" type="range" min="250" max="5000" step="50" value="950">
@@ -44,6 +45,10 @@
    </label>
   </div>
  </div>
+  <section class="diagnostics" id="diagnosticsPanel" hidden aria-live="polite">
+   <div class="diagnostics-head"><strong>Cognitive Diagnostics</strong><span>Latest AI decision</span></div>
+   <div id="diagnosticsBody">No AI decision has been recorded yet.</div>
+  </section>
  </section>
 <section class="card character" id="rightCard" style="--accent:#ff4fa8;--accent2:#ffc15c">
  <div class="portrait" id="rightPortrait"></div><span class="expression" id="rightExpression">Neutral</span>

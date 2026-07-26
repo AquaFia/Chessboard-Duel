@@ -1,3 +1,11 @@
+# Chessboard Duel — Phase 12: Cognitive Architecture
+
+Phase 12 replaces Elo-driven move selection with explicit cognitive profiles. Each character now has independent vision, calculation, evaluation, planning, conversion, defense, initiative, confidence, adaptability, and risk tolerance values. These values determine what the AI notices, how deeply it calculates, how strongly it follows plans, how noisy its judgment is, and what kinds of mistakes it makes.
+
+The optional **AI Diagnostics** panel shows the latest intent, plan, cognitive attributes, chosen move, and top candidate moves. It is intended for balancing and can be hidden during ordinary play.
+
+Daika is deliberately modeled as a cautious lower-level player: reasonably defensive, but with limited tactical vision, calculation, evaluation, and conversion. Her defensive identity remains intact without granting her expert tactical accuracy.
+
 # Cipherboard Duel
 
 A portable, static character-driven chess project.
@@ -248,9 +256,9 @@ Key changes:
 - Personality now distorts perception without overpowering large objective differences
 
 
-## Phase 11 — Intent-Based Chess
+## Phase 12 — Intent-Based Chess
 
-Phase 11 replaces the old direct personality-scoring path with an intent-driven move pipeline:
+Phase 12 replaces the old direct personality-scoring path with an intent-driven move pipeline:
 
 ```text
 Position Analysis

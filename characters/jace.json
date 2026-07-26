@@ -266,6 +266,18 @@
     "dialogueStyle": "Jace speaks quickly, cheerfully, and often, using puzzle, clue, code, evidence, angle, and loophole vocabulary. She thinks aloud, reacts openly to captures and threats, compliments clever moves sincerely, and may accidentally reveal her own plans because she cannot keep secrets. Her tone is bright, curious, playful, and unnervingly observant, with sudden quiet focus when she enters cryptologist mode.",
     "expressionStyle": "Her expressions move from wide curious openness to sharp pattern-focused stillness, then into bright starry-eyed discovery when she finds a tactic. She shows surprise with delayed processing, frustration through deadpan contradiction stares, anger mainly at false or unfair play, and defeat as a brief vulnerable 'oh' before curiosity returns.",
     "engineNotes": "Prioritize tactical motifs, forcing moves, traps, and creative complications. Give her high strength in messy middlegames, strong adaptation after seeing a pattern, and occasional practical inaccuracies caused by curiosity, low caution, or overvaluing interesting moves. In winning positions, allow flashy but less efficient continuations; in losing positions, increase counterattack, perpetual check, stalemate, and trap-seeking behavior. Dialogue should be frequent unless she is calculating deeply, and emotional state should shift from cheerful curiosity to intense cryptologist focus whenever hidden patterns appear.",
-    "designerNotes": "Jace should not feel like a generic genius chess player. Her brilliance is real, especially tactically, but her current chess skill is limited by lack of formal experience, impulsiveness, low danger sense, and boredom with quiet positions. She is most authentic as a chaotic code-breaker opponent: terrifying when the board has secrets, unreliable when the best move is boring, and always driven by the need to find the clue."
+    "designerNotes": "Jace should not feel like a generic genius chess player. Her brilliance is real, especially tactically, but her current chess skill is limited by lack of formal experience, impulsiveness, low danger sense, and boredom with quiet positions. She is most authentic as a chaotic code-breaker opponent: terrifying when the board has secrets, unreliable when the best move is boring, and always driven by the need to find the clue.",
+    "cognitiveModel": {
+      "vision": 84,
+      "calculation": 80,
+      "evaluation": 64,
+      "planning": 59,
+      "conversion": 50,
+      "defense": 43,
+      "initiative": 88,
+      "confidence": 91,
+      "adaptability": 92,
+      "riskTolerance": 86
+    }
   }
 }
