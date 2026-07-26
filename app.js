@@ -364,8 +364,113 @@ function updateMatchMemory(move,beforeEval,afterEval){
   opponent.contextualEvent="opponentRepeating";
  }
 }
-function chessScore(move,c){
- const brain=brainFor(c);
+function pieceCount(){
+ let count=0;
+ for(const row of game.board())for(const piece of row)if(piece)count++;
+ return count;
+}
+function squareFile(square){return square.charCodeAt(0)-97;}
+function squareRank(square){return Number(square[1])-1;}
+function centerDistance(square){
+ return Math.abs(squareFile(square)-3.5)+Math.abs(squareRank(square)-3.5);
+}
+function analyzePosition(color){
+ const opponent=color==="w"?"b":"w";
+ const historyLength=game.history().length;
+ const pieces=game.board().flat().filter(Boolean);
+ const own=pieces.filter(piece=>piece.color===color);
+ const enemy=pieces.filter(piece=>piece.color===opponent);
+ const ownMaterial=own.reduce((sum,piece)=>sum+(value[piece.type]||0),0);
+ const enemyMaterial=enemy.reduce((sum,piece)=>sum+(value[piece.type]||0),0);
+ const materialBalance=ownMaterial-enemyMaterial;
+ const queens=pieces.filter(piece=>piece.type==="q").length;
+ const phase=historyLength<16?"opening":queens===0||pieceCount()<=14?"endgame":"middlegame";
+ const legalMoves=game.moves({verbose:true});
+ const forcingMoves=legalMoves.filter(move=>move.captured||String(move.san).includes("+")||String(move.san).includes("#"));
+ const centerOccupancy=pieces.filter(piece=>["d4","d5","e4","e5"].includes(piece.square));
+ const centerState=centerOccupancy.length>=3?"closed":centerOccupancy.length<=1?"open":"contested";
+ const ownKing=own.find(piece=>piece.type==="k");
+ const enemyKing=enemy.find(piece=>piece.type==="k");
+ const ownKingEdge=ownKing?Math.min(squareFile(ownKing.square),7-squareFile(ownKing.square)):0;
+ const enemyKingEdge=enemyKing?Math.min(squareFile(enemyKing.square),7-squareFile(enemyKing.square)):0;
+ const kingSafety=clamp01(.72-(game.inCheck()&&game.turn()===color?.5:0)+(ownKingEdge<=1?.16:0));
+ const enemyKingExposure=clamp01(.28+(enemyKingEdge>=2?.22:0)+forcingMoves.length/24);
+ const development=clamp01(1-Math.max(0,16-historyLength)/16);
+ const mobility=legalMoves.length;
+ const initiative=clamp01(.35+forcingMoves.length/10+(game.inCheck()&&game.turn()===opponent?.28:0));
+ const tension=clamp01(forcingMoves.length/8+legalMoves.filter(move=>move.captured).length/12);
+ const passedPawnPotential=legalMoves.some(move=>move.piece==="p"&&((color==="w"&&squareRank(move.to)>=5)||(color==="b"&&squareRank(move.to)<=2)));
+ return {
+  color,opponent,phase,materialBalance,centerState,kingSafety,enemyKingExposure,
+  development,mobility,initiative,tension,forcingMoves:forcingMoves.length,
+  inCheck:game.inCheck()&&game.turn()===color,
+  winning:materialBalance>120,losing:materialBalance<-120,
+  passedPawnPotential,
+  candidateIntents:[]
+ };
+}
+function selectIntent(character,analysis){
+ const brain=brainFor(character);
+ const candidates=[];
+ const add=(id,score)=>candidates.push({id,score});
+ if(analysis.inCheck)add("emergencyDefense",100);
+ if(analysis.phase==="opening"&&analysis.development<.72)add("completeDevelopment",52+45*brain.positional);
+ if(analysis.winning){
+  add("technicalConversion",72+70*brain.conversion);
+  add("restrictCounterplay",58+52*brain.kingSafety);
+  add("simplify",44+62*brain.simplification);
+ }
+ if(analysis.losing){
+  add("counterattack",45+70*brain.aggression+42*brain.pressure);
+  add("createComplications",42+70*brain.complexity);
+  add("reduceDanger",52+58*brain.kingSafety);
+ }
+ if(analysis.enemyKingExposure>.5)add("kingsideAttack",44+75*brain.aggression+45*brain.tactics);
+ if(analysis.forcingMoves>=2)add("tacticalOpportunity",50+78*brain.tactics+32*brain.novelty);
+ if(analysis.centerState==="closed"){
+  add("improveWorstPiece",52+70*brain.positional);
+  add("pawnBreak",38+48*brain.aggression+32*brain.novelty);
+ }
+ if(analysis.centerState==="open")add("seizeInitiative",45+62*brain.pressure+42*brain.tactics);
+ if(analysis.kingSafety<.55)add("reduceDanger",66+70*brain.kingSafety);
+ if(analysis.passedPawnPotential)add("advancePassedPawn",48+58*brain.conversion);
+ add("improvePosition",46+62*brain.positional);
+ add("createComplications",28+64*brain.complexity+36*brain.novelty);
+ candidates.sort((a,b)=>b.score-a.score);
+ analysis.candidateIntents=candidates.slice(0,4);
+ const top=candidates.slice(0,Math.min(3,candidates.length));
+ const best=top[0].score;
+ const temperature=24+brain.randomness*38;
+ const weights=top.map(item=>Math.exp((item.score-best)/temperature));
+ let roll=seedRng()*weights.reduce((sum,item)=>sum+item,0);
+ for(let index=0;index<top.length;index++){
+  roll-=weights[index];
+  if(roll<=0)return top[index].id;
+ }
+ return top[0].id;
+}
+function buildPlan(intent,analysis){
+ const plans={
+  emergencyDefense:{priorities:["escapeCheck","tradeAttackers","kingSafety"]},
+  completeDevelopment:{priorities:["developPiece","castle","controlCenter"]},
+  technicalConversion:{priorities:["preserveAdvantage","tradeWhenSafe","advancePassedPawn"]},
+  restrictCounterplay:{priorities:["reduceForcingReplies","kingSafety","controlCenter"]},
+  simplify:{priorities:["tradePieces","avoidDrawWhileWinning","reduceForcingReplies"]},
+  counterattack:{priorities:["check","capture","createThreat"]},
+  createComplications:{priorities:["increaseForcingReplies","check","novelMove"]},
+  reduceDanger:{priorities:["kingSafety","tradeAttackers","reduceForcingReplies"]},
+  kingsideAttack:{priorities:["check","moveTowardEnemyKing","increaseForcingReplies"]},
+  tacticalOpportunity:{priorities:["mate","check","capture"]},
+  improveWorstPiece:{priorities:["developPiece","centralize","avoidRepeat"]},
+  pawnBreak:{priorities:["centralPawnMove","capture","openLines"]},
+  seizeInitiative:{priorities:["check","developWithTempo","centralize"]},
+  advancePassedPawn:{priorities:["advancePawn","supportPawn","tradePieces"]},
+  improvePosition:{priorities:["centralize","developPiece","kingSafety"]}
+ };
+ return {intent,phase:analysis.phase,priorities:plans[intent]?.priorities||plans.improvePosition.priorities};
+}
+function chessScore(move,character){
+ const brain=brainFor(character);
  const actor=move.color;
  const before=evaluate();
  game.move(move);
@@ -376,70 +481,66 @@ function chessScore(move,c){
  const searchScore=terminalMate?100000:terminalDraw?0:minimax(Math.max(0,brain.searchDepth-1),-Infinity,Infinity,actor);
  const result={
   material:actor==="w"?after-before:before-after,
-  check:game.inCheck(),
-  mate:terminalMate,
-  draw:terminalDraw,
+  check:game.inCheck(),mate:terminalMate,draw:terminalDraw,
   repetition:typeof game.isThreefoldRepetition==="function"&&game.isThreefoldRepetition(),
   stalemate:typeof game.isStalemate==="function"&&game.isStalemate(),
   replyCount:replies.length,
-  forcingReplies:replies.filter(r=>r.captured||String(r.san).includes("+")).length,
-  searchScore
+  forcingReplies:replies.filter(reply=>reply.captured||String(reply.san).includes("+")).length,
+  searchScore,
+  centerGain:Math.max(-2,centerDistance(move.from)-centerDistance(move.to)),
+  develops:move.piece!=="p"&&game.history().length<16,
+  castles:String(move.san).includes("O-O")
  };
  game.undo();
  return result;
 }
-function personalityScore(move,c,position){
- const brain=brainFor(c);
+function planScore(move,position,plan,character){
+ const brain=brainFor(character);
  const movingValue=value[move.piece]||0;
- let score=position.searchScore+position.material*(.35+brain.material*.35);
-
- if(position.mate)score+=100000;
- else if(position.check)score+=45+85*brain.tactics+55*brain.pressure;
-
- if(move.captured){
-  score+=(value[move.captured]||0)*(.08+.28*brain.material);
-  score+=22*brain.aggression;
-  if(move.captured==="q")score+=65*brain.pressure;
- }
- if(move.san.includes("O-O"))score+=28+60*brain.kingSafety;
- if(move.piece==="q")score+=10*brain.pressure-24*brain.kingSafety;
- if(move.piece==="q"&&brain.queenPreference>.8&&move.captured)score+=28;
-
- const center=["c4","c5","d4","d5","e4","e5","f4","f5"].includes(move.to);
- score+=(center?1:0)*(10+20*brain.positional);
- if(move.piece!=="p"&&game.history().length<16)score+=10*brain.positional;
- const complexity=Math.min(1,(position.replyCount+position.forcingReplies*2)/38);
- score+=(complexity-.45)*55*brain.complexity;
- score+=(18-position.replyCount)*2.2*brain.simplification;
- if(move.captured)score-=movingValue*.014*brain.risk;
-
  const currentAdvantage=evaluate()*(move.color==="w"?1:-1);
+ let score=position.searchScore+position.material*(.35+brain.material*.35);
+ if(position.mate)score+=100000;
+ if(position.check)score+=58+80*brain.tactics;
+ if(move.captured)score+=(value[move.captured]||0)*(.12+.24*brain.material)-movingValue*.012*brain.risk;
+ for(const priority of plan.priorities){
+  if(priority==="escapeCheck"&&!position.draw)score+=95;
+  if(priority==="mate"&&position.mate)score+=100000;
+  if(priority==="check"&&position.check)score+=42+55*brain.pressure;
+  if(priority==="capture"&&move.captured)score+=28+36*brain.aggression;
+  if(priority==="castle"&&position.castles)score+=62+70*brain.kingSafety;
+  if(priority==="kingSafety"&&position.castles)score+=52+65*brain.kingSafety;
+  if(priority==="developPiece"&&position.develops)score+=22+42*brain.positional;
+  if(priority==="centralize")score+=position.centerGain*(12+22*brain.positional);
+  if(priority==="controlCenter"&&["c4","c5","d4","d5","e4","e5","f4","f5"].includes(move.to))score+=22+28*brain.positional;
+  if(priority==="centralPawnMove"&&move.piece==="p"&&["c","d","e","f"].includes(move.from[0]))score+=30+30*brain.aggression;
+  if(priority==="advancePawn"&&move.piece==="p")score+=24+28*brain.conversion;
+  if(priority==="tradePieces"&&move.captured)score+=26+50*brain.simplification;
+  if(priority==="tradeAttackers"&&move.captured)score+=22+46*brain.kingSafety;
+  if(priority==="reduceForcingReplies")score+=(18-position.forcingReplies)*2.1;
+  if(priority==="increaseForcingReplies")score+=position.forcingReplies*4.2+position.replyCount*1.1;
+  if(priority==="moveTowardEnemyKing"&&position.check)score+=34+40*brain.aggression;
+  if(priority==="novelMove")score+=position.replyCount*1.4*brain.novelty;
+  if(priority==="preserveAdvantage"&&currentAdvantage>120)score+=position.searchScore*.12*brain.conversion;
+  if(priority==="avoidDrawWhileWinning"&&currentAdvantage>120&&(position.draw||position.repetition||position.stalemate))score-=520*brain.conversion;
+  if(priority==="avoidRepeat"&&position.repetition)score-=170;
+ }
  if(position.draw){
-  const winning=currentAdvantage>120;
-  const losing=currentAdvantage<-120;
-  if(winning)score-=220+420*brain.conversion;
-  else if(losing)score+=80+160*(1-brain.aggression);
-  else score+=(brain.aggression>.65?-90:20);
+  if(currentAdvantage>120)score-=240+430*brain.conversion;
+  else if(currentAdvantage<-120)score+=90+160*(1-brain.aggression);
+  else score+=brain.aggression>.65?-85:18;
  }
- if(currentAdvantage>120){
-  score+=position.searchScore*.12*brain.conversion;
-  if(position.repetition||position.stalemate)score-=500*brain.conversion;
- }
-
- // Human-strength perception: weaker players mis-evaluate more, while personality
- // determines the direction of the error rather than merely breaking ties.
- let perceptionNoise=(seedRng()-.5)*2*brain.evaluationNoise;
- if(brain.aggression>.7&&position.check)perceptionNoise+=brain.evaluationNoise*.35;
- if(brain.kingSafety>.8&&move.san.includes("O-O"))perceptionNoise+=brain.evaluationNoise*.25;
- if(brain.novelty>.75&&complexity>.55)perceptionNoise+=brain.evaluationNoise*.28;
- score+=perceptionNoise;
-
- if(seedRng()<brain.blunderChance){score-=90+seedRng()*(110+brain.evaluationNoise*2.2);}
  return score;
 }
-function moveScore(move,c){
- const position=chessScore(move,c);
- return personalityScore(move,c,position)+memoryScore(move,c,position);
+function perceivedCandidateScore(move,position,plan,character){
+ const brain=brainFor(character);
+ let score=planScore(move,position,plan,character)+memoryScore(move,character,position);
+ let noise=(seedRng()-.5)*2*brain.evaluationNoise;
+ if(plan.intent==="kingsideAttack"&&position.check)noise+=brain.evaluationNoise*.32;
+ if(plan.intent==="reduceDanger"&&position.castles)noise+=brain.evaluationNoise*.28;
+ if(plan.intent==="createComplications"&&position.replyCount>18)noise+=brain.evaluationNoise*.26;
+ score+=noise;
+ if(seedRng()<brain.blunderChance)score-=90+seedRng()*(110+brain.evaluationNoise*2.2);
+ return score;
 }
 function weightedOpeningChoice(options,freeformWeight){
  const total=options.reduce((sum,line)=>sum+line.weight,0)+freeformWeight;
@@ -502,17 +603,28 @@ function chooseMove(c){
  if(!moves.length)return null;
  c._usedOpeningMove=false;
  const bookMove=openingMove(c);
- if(bookMove)return bookMove;
+ if(bookMove){c._intent="openingPreparation";return bookMove;}
  const brain=brainFor(c);
- const ranked=moves.map(m=>({m,s:moveScore(m,c)})).sort((a,b)=>b.s-a.s);
+ const analysis=analyzePosition(game.turn());
+ const intent=selectIntent(c,analysis);
+ const plan=buildPlan(intent,analysis);
+ c._intent=intent;
+ c._positionAnalysis=analysis;
+ const ranked=moves.map(move=>{
+  const position=chessScore(move,c);
+  return {m:move,s:perceivedCandidateScore(move,position,plan,c)};
+ }).sort((a,b)=>b.s-a.s);
  const skillControl=clamp01((brain.elo-900)/900);
  const breadth=Math.max(1,Math.min(ranked.length,Math.round(6-4*skillControl+brain.randomness*2)));
  const pool=ranked.slice(0,breadth);
  const temperature=.28+brain.randomness*1.15+(1-skillControl)*.35;
  const best=pool[0].s;
  const weights=pool.map(item=>Math.exp((item.s-best)/Math.max(18,55*temperature)));
- let roll=seedRng()*weights.reduce((a,b)=>a+b,0);
- for(let i=0;i<pool.length;i++){roll-=weights[i];if(roll<=0)return pool[i].m;}
+ let roll=seedRng()*weights.reduce((sum,item)=>sum+item,0);
+ for(let index=0;index<pool.length;index++){
+  roll-=weights[index];
+  if(roll<=0)return pool[index].m;
+ }
  return pool[0].m;
 }
 function moveEvent(move){
@@ -604,7 +716,7 @@ function afterMove(move,autoContinue=true){
  speak(actor,dialogueFor(actor,opponent,dialogueEvent,mood),side);
  $("#statusDetail").textContent=actor._usedOpeningMove
   ?`${actor.shortName||actor.name} follows ${actor._openingName}.`
-  :`${actor.shortName||actor.name} is ${mood}.`;
+  :`${actor.shortName||actor.name} pursues ${String(actor._intent||"improvePosition").replace(/([A-Z])/g," $1").toLowerCase()}.`;
 
  if(game.isGameOver()){finish();updateMoveControls();return}
  updateMoveControls();
