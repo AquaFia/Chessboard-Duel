@@ -246,3 +246,25 @@ Key changes:
 - Draw, repetition, and stalemate penalties while winning
 - Conversion strength derived from endgame knowledge, practical accuracy, and discipline
 - Personality now distorts perception without overpowering large objective differences
+
+
+## Phase 11 — Intent-Based Chess
+
+Phase 11 replaces the old direct personality-scoring path with an intent-driven move pipeline:
+
+```text
+Position Analysis
+→ Intent Selection
+→ Plan Construction
+→ Candidate Evaluation
+→ Skill Distortion
+→ Final Selection
+```
+
+The runtime now creates one objective position report covering game phase, material balance, center state, king safety, development, initiative, tension, and passed-pawn potential. Each character then selects an intent from that shared report according to their chess skill and personality.
+
+Supported intents include emergency defense, development, technical conversion, restricting counterplay, simplification, counterattack, complication, danger reduction, king attack, tactical opportunity, worst-piece improvement, pawn breaks, initiative, passed-pawn advancement, and general positional improvement.
+
+The selected intent builds a short priority plan. Candidate moves are evaluated against that plan before Elo-based perception noise and candidate breadth are applied. The current intent is also surfaced in the match status text.
+
+The superseded `personalityScore()` and `moveScore()` functions were removed rather than retained as fallback code. Opening identity, adaptive memory, alpha-beta search, dialogue, and match review remain integrated with the new pipeline.

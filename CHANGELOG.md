@@ -1,5 +1,14 @@
 # Changelog
 
+## Phase 11 — Intent-Based Chess
+
+- Replaced the direct move-score pipeline with position analysis, intent selection, plan construction, candidate evaluation, skill distortion, and final selection.
+- Added one shared objective position report for phase, material, center state, king safety, development, initiative, tension, and passed-pawn potential.
+- Added character-weighted intents and intent-specific move priorities.
+- Added live status text showing the active character intent.
+- Preserved Phase 10 Elo search, evaluation noise, conversion logic, openings, and adaptive memory.
+- Deleted the superseded `personalityScore()` and `moveScore()` functions; no compatibility or fallback path remains.
+
 ## Phase 10 — Human Strength Simulation
 
 - Added Elo-based search depth and alpha-beta calculation.
