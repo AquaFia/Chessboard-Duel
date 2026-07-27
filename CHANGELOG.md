@@ -1,9 +1,9 @@
-## Phase 12.1 — Opening Philosophy Cleanup (corrected)
+# Phase 12.1 Flavor-Field Cleanup
 
-- Removed the descriptive `personalityProfile.openingPhilosophy` field from every character and the character template.
-- Preserved `openingProfile.white.freeformWeight` and `openingProfile.black.freeformWeight`.
-- Preserved weighted freeform selection for experimental characters such as Jace.
-- Preserved all authored opening lines and the fallback to normal move selection after a deviation.
+- Removed unused `openingPhilosophy`, `signatureBehaviors`, `dialogueStyle`, `expressionStyle`, `engineNotes`, and `designerNotes` fields from every character profile and the template.
+- Replaced signature-text parsing for queen behavior with the structured `behaviorModel.queenActivity` value.
+- Updated runtime validation so only gameplay-relevant profile sections are required.
+- Kept `openingProfile.freeformWeight` and all authored opening lines unchanged.
 
 # Phase 12 — Cognitive Architecture
 

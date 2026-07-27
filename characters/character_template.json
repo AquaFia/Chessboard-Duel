@@ -119,11 +119,6 @@
       "timeManagement": 50
     },
     "playstyle": [],
-    "signatureBehaviors": [],
-    "dialogueStyle": "",
-    "expressionStyle": "",
-    "engineNotes": "",
-    "designerNotes": "",
     "cognitiveModel": {
       "vision": 50,
       "calculation": 50,
