@@ -242,13 +242,13 @@ retaliation
 Relationship-specific dialogue may override these events in the same way as
 other dialogue. When no contextual line exists, the normal move event is used.
 
-## Phase 10 — Human Strength Simulation
+## Phase 10 — Human Strength Simulation (historical)
 
-Phase 10 separates chess strength from personality. Estimated Elo now controls search depth, evaluation noise, candidate breadth, and conversion reliability. Stronger characters calculate farther and preserve winning advantages more consistently, while weaker characters make believable mistakes shaped by their own personality.
+Phase 10 separated chess strength from personality before the Stockfish-only architecture replaced its custom search. Estimated Elo now controls search depth, evaluation noise, candidate breadth, and conversion reliability. Stronger characters calculate farther and preserve winning advantages more consistently, while weaker characters make believable mistakes shaped by their own personality.
 
 Key changes:
 
-- Elo-driven 1–3 ply alpha-beta search
+- Elo-driven 1–3 ply alpha-beta search (removed in Phase 13.1)
 - Character-specific evaluation noise
 - Skill-sensitive candidate selection
 - Draw, repetition, and stalemate penalties while winning
@@ -275,7 +275,7 @@ Supported intents include emergency defense, development, technical conversion, 
 
 The selected intent builds a short priority plan. Candidate moves are evaluated against that plan before Elo-based perception noise and candidate breadth are applied. The current intent is also surfaced in the match status text.
 
-The superseded `personalityScore()` and `moveScore()` functions were removed rather than retained as fallback code. Opening identity, adaptive memory, alpha-beta search, dialogue, and match review remain integrated with the new pipeline.
+The superseded `personalityScore()` and `moveScore()` functions were removed rather than retained as fallback code. Opening identity, adaptive memory, dialogue, and match review remain integrated. The alpha-beta search described in this historical phase was removed completely in Phase 13.1.
 
 ## Phase 12.1 — Perception, Candidate Discovery, and Calibration
 
@@ -289,7 +289,7 @@ Phase 12.1 replaces the assumption that every character seriously analyzes every
 
 Lower-skilled players can now omit strong moves, miss reply tactics, and misjudge consequences instead of merely adding noise after complete analysis. Higher-skilled players consider more candidates and perceive tactical replies more reliably. Personality remains equally important through intent, aggression, caution, risk, material preference, positional preference, and plan execution.
 
-The diagnostics panel now reports legal moves, moves noticed, omitted moves, whether the best engine move was noticed, whether reply tactics were perceived, and separate skill/personality contributions.
+The diagnostics panel now reports legal moves, moves noticed, moves analyzed by Stockfish, omitted moves, whether reply tactics were perceived, and separate skill/personality contributions.
 
 
 ## Phase 12.2 profile contract
@@ -301,6 +301,6 @@ The gameplay profile contains `estimatedElo`, `corePersonality`, `chessAptitude`
 
 Stockfish 18 lite single-threaded is loaded in the browser from jsDelivr and used through UCI MultiPV analysis. Character perception first limits the legal moves the character notices. Stockfish objectively analyzes only that noticed set. The character profile then distorts the evaluation and chooses among the candidates according to skill, behavior, and decision traits.
 
-`personalityProfile.estimatedElo` is restored as a calibration target and helps set the analysis-time envelope. It never replaces the detailed skill profile. If Stockfish cannot load, the old handcrafted evaluator is retained only as an explicitly reported emergency fallback. Because the project fetches JSON modules and WebAssembly, serve it through GitHub Pages or another HTTP server rather than opening `index.html` directly from disk.
+`personalityProfile.estimatedElo` is restored as a calibration target and helps set the analysis-time envelope. It never replaces the detailed skill profile. Stockfish is the sole chess-analysis engine: there is no handcrafted evaluator, minimax search, compatibility path, or emergency move generator. If Stockfish cannot initialize or complete an analysis, AI play stops and the interface reports the error. Because the project fetches JSON modules and WebAssembly, serve it through GitHub Pages or another HTTP server rather than opening `index.html` directly from disk.
 
 Stockfish.js and Stockfish are GPLv3 software. This project loads the unmodified `stockfish` npm distribution from jsDelivr; its source and license are available from the package repository.

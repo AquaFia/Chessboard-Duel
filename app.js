@@ -24,9 +24,9 @@ class StockfishService{
     return true;
    }catch(error){
     this.failedReason=error?.message||String(error);
-    console.error("Stockfish unavailable; using emergency fallback evaluator.",error);
+    console.error("Stockfish failed to initialize.",error);
     this.engine=null;
-    return false;
+    throw error;
    }
   })();
   return this.readyPromise;
@@ -48,7 +48,9 @@ class StockfishService{
   if(line.includes(active.token))active.resolve();
  }
  async analyze(fen,uciMoves,{multiPV=5,movetime=250}={}){
-  if(!(await this.ready())||!this.engine||!uciMoves.length)return null;
+  await this.ready();
+  if(!this.engine)throw new Error(this.failedReason||"Stockfish is unavailable.");
+  if(!uciMoves.length)throw new Error("Stockfish analysis requires at least one candidate move.");
   if(this.active)throw new Error("Stockfish analysis requested while the engine is busy.");
   const count=Math.max(1,Math.min(multiPV,uciMoves.length));
   this.engine.postMessage("stop");
@@ -249,37 +251,10 @@ function humanClick(sq){
   renderBoard();
  }
 }
-function evaluate(){
- let s=0;
- for(const row of game.board())for(const p of row)if(p)s+=(p.color==="w"?1:-1)*value[p.type];
- return s;
-}
-function staticEvaluation(color){
- const material=evaluate()*(color==="w"?1:-1);
- if(game.isCheckmate())return game.turn()===color?-100000:100000;
- if(game.isDraw())return 0;
- const mobility=game.moves().length*(game.turn()===color?1:-1);
- const checkPressure=game.inCheck()*(game.turn()===color?-28:28);
- return material+mobility*1.5+checkPressure;
-}
-function orderedMoves(){
- return game.moves({verbose:true}).sort((a,b)=>{
-  const score=m=>(m.captured?value[m.captured]||0:0)+(String(m.san).includes("+")?80:0)+(String(m.san).includes("#")?10000:0);
-  return score(b)-score(a);
- });
-}
-function minimax(depth,alpha,beta,rootColor){
- if(depth<=0||game.isGameOver())return staticEvaluation(rootColor);
- const maximizing=game.turn()===rootColor;
- const moves=orderedMoves();
- if(maximizing){
-  let best=-Infinity;
-  for(const move of moves){game.move(move);best=Math.max(best,minimax(depth-1,alpha,beta,rootColor));game.undo();alpha=Math.max(alpha,best);if(beta<=alpha)break;}
-  return best;
- }
- let best=Infinity;
- for(const move of moves){game.move(move);best=Math.min(best,minimax(depth-1,alpha,beta,rootColor));game.undo();beta=Math.min(beta,best);if(beta<=alpha)break;}
- return best;
+function materialBalance(){
+ let score=0;
+ for(const row of game.board())for(const piece of row)if(piece)score+=(piece.color==="w"?1:-1)*value[piece.type];
+ return score;
 }
 const clamp01=n=>Math.max(0,Math.min(1,Number(n)||0));
 const pct=n=>clamp01((Number(n)||0)/100);
@@ -711,20 +686,15 @@ function discoverCandidates(character,moves,analysis,plan){
  }
  return {noticed,missed};
 }
-function chessScore(move,character){
- const brain=brainFor(character);
+function candidatePosition(move){
  const actor=move.color;
- const before=evaluate();
+ const before=materialBalance();
  game.move(move);
- const after=evaluate();
+ const after=materialBalance();
  const replies=game.moves({verbose:true});
  const terminalDraw=game.isDraw();
  const terminalMate=game.isCheckmate();
- const immediateScore=staticEvaluation(actor);
  const analysis=analyzePosition(actor);
- const phaseKnowledge=brain.phaseKnowledge[analysis.phase]??brain.knowledgeAverage;
- const fallbackDepth=Math.max(1,Math.min(3,Math.round(1+brain.calculation*1.5+phaseKnowledge*.5-brain.overthinking*.35)));
- const searchScore=terminalMate?100000:terminalDraw?0:minimax(Math.max(0,fallbackDepth-1),-Infinity,Infinity,actor);
  const result={
   material:actor==="w"?after-before:before-after,
   check:game.inCheck(),mate:terminalMate,draw:terminalDraw,
@@ -732,7 +702,7 @@ function chessScore(move,character){
   stalemate:typeof game.isStalemate==="function"&&game.isStalemate(),
   replyCount:replies.length,
   forcingReplies:replies.filter(reply=>reply.captured||String(reply.san).includes("+")||String(reply.san).includes("#")).length,
-  searchScore,immediateScore,phase:analysis.phase,
+  phase:analysis.phase,
   centerGain:Math.max(-2,centerDistance(move.from)-centerDistance(move.to)),
   develops:move.piece!=="p"&&game.history().length<16,
   castles:String(move.san).includes("O-O")
@@ -768,19 +738,15 @@ function personalityPreference(move,position,plan,character,features){
  return Math.max(-90,Math.min(90,score));
 }
 function perceivePosition(position,brain){
- let perceived=position.searchScore;
- const threatDifficulty=clamp01(position.forcingReplies/7+(Math.abs(position.searchScore-position.immediateScore)>180?.25:0));
+ const threatDifficulty=clamp01(position.forcingReplies/7);
  const pressurePenalty=threatDifficulty*(.34-.16*brain.composure-.1*brain.emotionalStability);
  const detection=clamp01(brain.threatDetection*.34+brain.vision*.22+brain.calculation*.25+brain.evaluation*.09+brain.spatial*.06+brain.practicalAccuracy*.04-pressurePenalty);
  const sawConsequences=seedRng()<detection;
- if(!sawConsequences){
-  const shallowWeight=.7+.2*(1-brain.calculation);
-  perceived=position.immediateScore*shallowWeight+position.searchScore*(1-shallowWeight);
- }
+ const consequencePenalty=sawConsequences?0:threatDifficulty*(45+95*(1-brain.calculation));
  const knowledge=brain.phaseKnowledge[position.phase]??brain.knowledgeAverage;
  const adaptationReduction=clamp01(brain.adaptability*.45+brain.learningSpeed*.25+brain.memory*.2)*.28;
  const evaluationNoise=(seedRng()-.5)*2*brain.evaluationNoise*(1-knowledge*.28-adaptationReduction);
- return {score:perceived+evaluationNoise,sawConsequences,detection};
+ return {score:position.objectiveScore-consequencePenalty+evaluationNoise,sawConsequences,detection};
 }
 function perceivedCandidateScore(move,position,plan,character,features){
  const brain=brainFor(character);
@@ -790,7 +756,7 @@ function perceivedCandidateScore(move,position,plan,character,features){
  let score=skillScore+personalityScore;
  if(position.mate)score=100000;
  if(position.draw){
-  const advantage=evaluate()*(move.color==="w"?1:-1);
+  const advantage=materialBalance()*(move.color==="w"?1:-1);
   if(advantage>120)score-=180+360*brain.conversion;
   else if(advantage<-120)score+=60+120*(1-brain.aggression);
  }
@@ -870,24 +836,21 @@ async function chooseMove(c){
  const discovery=discoverCandidates(c,moves,analysis,plan);
  const fen=game.fen();
  const candidateMoves=discovery.noticed.map(item=>item.move);
- let engineCandidates=null;
- try{
-  engineCandidates=await stockfish.analyze(fen,candidateMoves.map(moveToUci),{
-   multiPV:Math.min(brain.stockfishMultiPV,candidateMoves.length),
-   movetime:brain.analysisBudget
-  });
- }catch(error){
-  console.error("Stockfish analysis failed; using emergency fallback for this move.",error);
- }
- const engineByUci=new Map((engineCandidates||[]).map(item=>[item.uci,item]));
- const usedStockfish=engineByUci.size>0;
- const ranked=discovery.noticed.map(item=>{
-  const position=chessScore(item.move,c);
-  const engine=engineByUci.get(moveToUci(item.move));
-  if(engine)position.searchScore=engine.objectiveScore;
+ const engineCandidates=await stockfish.analyze(fen,candidateMoves.map(moveToUci),{
+  multiPV:Math.min(brain.stockfishMultiPV,candidateMoves.length),
+  movetime:brain.analysisBudget
+ });
+ if(!engineCandidates?.length)throw new Error("Stockfish returned no candidate analysis.");
+ const noticedByUci=new Map(discovery.noticed.map(item=>[moveToUci(item.move),item]));
+ const ranked=engineCandidates.map(engine=>{
+  const item=noticedByUci.get(engine.uci);
+  if(!item)return null;
+  const position=candidatePosition(item.move);
+  position.objectiveScore=engine.objectiveScore;
   const perceived=perceivedCandidateScore(item.move,position,plan,c,item.features);
   return {m:item.move,s:perceived.score,position,features:item.features,perceived,engine};
- }).sort((a,b)=>b.s-a.s);
+ }).filter(Boolean).sort((a,b)=>b.s-a.s);
+ if(!ranked.length)throw new Error("Stockfish candidate moves could not be matched to legal moves.");
  const phaseKnowledge=brain.phaseKnowledge[analysis.phase]??brain.knowledgeAverage;
  const competence=clamp01(brain.vision*.22+brain.calculation*.23+brain.evaluation*.2+brain.practicalAccuracy*.13+phaseKnowledge*.1+brain.confidence*.12);
  const breadth=Math.max(1,Math.min(ranked.length,Math.round(5-3*competence+brain.randomness*2+brain.intuitionReliance-brain.calculationReliance*.6)));
@@ -901,23 +864,18 @@ async function chooseMove(c){
   roll-=weights[index];
   if(roll<=0){chosen=pool[index];break;}
  }
- const objectiveRanked=usedStockfish
-  ? ranked.filter(item=>item.engine).sort((a,b)=>b.engine.objectiveScore-a.engine.objectiveScore)
-  : moves.map(move=>({m:move,engine:{objectiveScore:chessScore(move,c).searchScore}})).sort((a,b)=>b.engine.objectiveScore-a.engine.objectiveScore);
- const objectiveBest=objectiveRanked[0];
- const noticedSans=new Set(discovery.noticed.map(item=>item.move.san));
+ const objectiveBest=[...ranked].sort((a,b)=>b.engine.objectiveScore-a.engine.objectiveScore)[0];
  c._cognitiveTrace={
-  intent,plan:plan.priorities.join(" → "),engine:usedStockfish?STOCKFISH_SOURCE:"Emergency fallback evaluator",
-  estimatedElo:brain.estimatedElo,analysisBudget:brain.analysisBudget,multiPV:brain.stockfishMultiPV,
+  intent,plan:plan.priorities.join(" → "),engine:STOCKFISH_SOURCE,
+  estimatedElo:brain.estimatedElo,analysisBudget:brain.analysisBudget,multiPV:Math.min(brain.stockfishMultiPV,candidateMoves.length),
   confidence:Math.round(brain.confidence*100),vision:Math.round(brain.vision*100),
   calculation:Math.round(brain.calculation*100),evaluation:Math.round(brain.evaluation*100),
   risk:Math.round(brain.risk*100),chosen:chosen.m.san,
-  legalCount:moves.length,noticedCount:discovery.noticed.length,
+  legalCount:moves.length,noticedCount:discovery.noticed.length,analyzedCount:ranked.length,
   objectiveBest:objectiveBest?.m?.san||"—",
-  bestWasNoticed:objectiveBest?noticedSans.has(objectiveBest.m.san):true,
   sawConsequences:chosen.perceived.perception.sawConsequences,
   candidates:ranked.slice(0,8).map(item=>({
-   san:item.m.san,score:Math.round(item.s),objective:item.engine?Math.round(item.engine.objectiveScore):Math.round(item.position.searchScore),
+   san:item.m.san,score:Math.round(item.s),objective:Math.round(item.engine.objectiveScore),
    skill:Math.round(item.perceived.skillScore),personality:Math.round(item.perceived.personalityScore),forcingReplies:item.position.forcingReplies,
    sawConsequences:item.perceived.perception.sawConsequences
   })),
@@ -942,7 +900,7 @@ function renderDiagnostics(character){
    <div><span>Stockfish budget</span><strong>${trace.analysisBudget} ms · MultiPV ${trace.multiPV}</strong></div>
    <div><span>Legal moves</span><strong>${trace.legalCount}</strong></div>
    <div><span>Moves noticed</span><strong>${trace.noticedCount}</strong></div>
-   <div><span>Best noticed?</span><strong>${trace.bestWasNoticed?"Yes":"No"}</strong></div>
+   <div><span>Moves analyzed</span><strong>${trace.analyzedCount}</strong></div>
    <div><span>Saw reply tactics?</span><strong>${trace.sawConsequences?"Yes":"No"}</strong></div>
    <div><span>Vision</span><strong>${trace.vision}</strong></div>
    <div><span>Calculation</span><strong>${trace.calculation}</strong></div>
@@ -959,7 +917,7 @@ function moveEvent(move){
  if(game.inCheck())return "check";
  if(move?.captured)return "capture";
  if(game.history().length<=2)return "opening";
- const actorAdvantage=evaluate()*(move.color==="w"?1:-1);
+ const actorAdvantage=materialBalance()*(move.color==="w"?1:-1);
  if(actorAdvantage>250)return "winning";
  if(actorAdvantage<-250)return "losing";
  return "move";
@@ -1019,9 +977,9 @@ function contextualDialogueEvent(character,fallbackEvent){
  return hasRelationship||hasStandard?contextual:fallbackEvent;
 }
 function afterMove(move,autoContinue=true){
- const afterEval=evaluate();
+ const afterEval=materialBalance();
  game.undo();
- const beforeEval=evaluate();
+ const beforeEval=materialBalance();
  game.move(move);
  updateMatchMemory(move,beforeEval,afterEval);
  renderBoard([move.from,move.to]);appendMove(move);
@@ -1084,7 +1042,7 @@ function appendMove(m){
 function updateStatus(){
  $("#turnText").textContent=game.isGameOver()?"Game complete":`${game.turn()==="w"?config.white?.shortName||"White":config.black?.shortName||"Black"} to move`;
  $("#fenText").textContent=`Move ${Math.ceil((game.history().length+1)/2)}`;
- const ev=Math.max(-900,Math.min(900,evaluate())),left=50+ev/36;
+ const ev=Math.max(-900,Math.min(900,materialBalance())),left=50+ev/36;
  $("#momentumLeft").style.width=`${left}%`;$("#momentumRight").style.width=`${100-left}%`;
  $("#leftMeter").style.width=`${left}%`;$("#rightMeter").style.width=`${100-left}%`;
  if(config.white&&config.black)updateMoveControls();
@@ -1106,12 +1064,26 @@ function pauseMatch(){
  clearTimeout(timer);
  $("#play").textContent="▶ Run";
 }
+function stopForStockfishError(error){
+ pauseMatch();
+ const message=error?.message||String(error);
+ console.error("AI stopped because Stockfish failed.",error);
+ $("#statusDetail").textContent=`Stockfish error: ${message}`;
+ $("#leftSpeech").textContent="Stockfish is unavailable.";
+ $("#rightSpeech").textContent="AI play has stopped.";
+ const panel=$("#diagnosticsPanel");
+ if(panel){panel.hidden=false;$("#diagnosticsBody").textContent=`Stockfish error: ${message}`;}
+}
 async function playNextAiMove(){
  if(game.isGameOver()||sideMode(game.turn())!=="ai")return;
  pauseMatch();
  const c=game.turn()==="w"?config.white:config.black;
- const move=await chooseMove(c);
- if(move)afterMove(game.move(move),false);
+ try{
+  const move=await chooseMove(c);
+  if(move)afterMove(game.move(move),false);
+ }catch(error){
+  stopForStockfishError(error);
+ }
 }
 function rebuildMatchMemory(){
  const history=game.history({verbose:true});
@@ -1166,8 +1138,13 @@ function scheduleAi(){
  running=true;$("#play").textContent="❚❚ Pause";
  timer=setTimeout(async()=>{
   if(!running)return;
-  const c=game.turn()==="w"?config.white:config.black,m=await chooseMove(c);
-  if(m&&running){const made=game.move(m);afterMove(made)}
+  try{
+   const c=game.turn()==="w"?config.white:config.black;
+   const m=await chooseMove(c);
+   if(m&&running){const made=game.move(m);afterMove(made)}
+  }catch(error){
+   stopForStockfishError(error);
+  }
  },Math.max(120,Number($("#delay").value)*(1.35-.7*brainFor(game.turn()==="w"?config.white:config.black).moveSpeed)));
 }
 function clearOutcomeState(){

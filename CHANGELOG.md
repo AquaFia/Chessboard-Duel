@@ -1,12 +1,13 @@
-# Phase 13 — Stockfish Hybrid Restoration
+# Phase 13.1 — Stockfish-Only Analysis
 
 - Restored Stockfish 18 lite single-threaded as the objective chess-analysis layer.
 - Added UCI MultiPV analysis restricted to each character's perceived candidate set.
 - Converted AI move selection to asynchronous analysis.
 - Restored `estimatedElo` as a calibration target and analysis-budget input.
 - Preserved authored opening lines and `freeformWeight`.
-- Kept the handcrafted evaluator only as a visible emergency fallback.
-- Expanded diagnostics with engine source, target Elo, budget, MultiPV, objective score, perceived score, and personality adjustment.
+- Removed the handcrafted evaluator, alpha-beta/minimax search, and every emergency move-generation path. Stockfish is now the sole chess-analysis engine.
+- Expanded diagnostics with engine source, target Elo, budget, MultiPV, objective score, perceived score, personality adjustment, and the number of candidates actually analyzed.
+- AI play now stops with a visible diagnostic error if Stockfish fails to initialize, times out, or returns no usable candidates.
 
 # Phase 12.2 — Complete Profile Wiring
 
