@@ -1,10 +1,10 @@
-# Chessboard Duel — Phase 12: Cognitive Architecture
+# Chessboard Duel — Phase 13.1: Stockfish Request Manager
 
-Phase 12 replaces Elo-driven move selection with explicit cognitive profiles. Each character now has independent vision, calculation, evaluation, planning, conversion, defense, initiative, confidence, adaptability, and risk tolerance values. These values determine what the AI notices, how deeply it calculates, how strongly it follows plans, how noisy its judgment is, and what kinds of mistakes it makes.
+Stockfish 18 remains the only chess analysis engine. This phase removes overlapping analysis failures by routing every AI move request through one request manager. Only one Stockfish `go` command can be active at a time, duplicate UI requests are ignored, and analysis results are discarded when the board or match changes before the result returns.
 
-The optional **AI Diagnostics** panel shows the latest intent, plan, cognitive attributes, chosen move, and top candidate moves. It is intended for balancing and can be hidden during ordinary play.
+`chess.js` is used only for board state, legal move validation, history, and game-end rules. There is no homemade minimax, evaluator, candidate engine, or fallback move engine. If Stockfish cannot load or returns an actual protocol error, the match pauses and reports the failure.
 
-Daika is deliberately modeled as a cautious lower-level player: reasonably defensive, but with limited tactical vision, calculation, evaluation, and conversion. Her defensive identity remains intact without granting her expert tactical accuracy.
+The character opening books and `freeformWeight` behavior are unchanged. The next balancing phase will audit and rewire the character JSON fields so they meaningfully influence selection among Stockfish MultiPV candidates.
 
 # Cipherboard Duel
 
