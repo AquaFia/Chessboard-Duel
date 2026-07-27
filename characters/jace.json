@@ -191,7 +191,7 @@
     "draw": "curious"
   },
   "personalityProfile": {
-    "estimatedElo": 1900,
+    "estimatedElo": 1250,
     "corePersonality": {
       "aggression": 42,
       "riskTolerance": 88,

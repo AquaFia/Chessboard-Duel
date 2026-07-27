@@ -1,14 +1,3 @@
-# Phase 13.1 — Stockfish-Only Analysis
-
-- Restored Stockfish 18 lite single-threaded as the objective chess-analysis layer.
-- Added UCI MultiPV analysis restricted to each character's perceived candidate set.
-- Converted AI move selection to asynchronous analysis.
-- Restored `estimatedElo` as a calibration target and analysis-budget input.
-- Preserved authored opening lines and `freeformWeight`.
-- Removed the handcrafted evaluator, alpha-beta/minimax search, and every emergency move-generation path. Stockfish is now the sole chess-analysis engine.
-- Expanded diagnostics with engine source, target Elo, budget, MultiPV, objective score, perceived score, personality adjustment, and the number of candidates actually analyzed.
-- AI play now stops with a visible diagnostic error if Stockfish fails to initialize, times out, or returns no usable candidates.
-
 # Phase 12.2 — Complete Profile Wiring
 
 - Removed `playstyle` completely; broad string labels no longer affect AI behavior.
@@ -270,3 +259,14 @@ Changes:
 - Added universal repeated-piece penalties and material-capture safeguards.
 - Removed the obsolete tactical-blindness penalty and plan-reliability blend rather than retaining fallback behavior.
 - No character-name-specific engine rules were added.
+
+## Phase 13.0 — Stockfish-only engine foundation
+
+- Restored Stockfish 18 as the sole AI analysis engine.
+- Added Stockfish MultiPV candidate analysis.
+- Removed the handcrafted evaluator, minimax, alpha-beta search, candidate search, and all fallback move-engine code.
+- Added `estimatedElo` to every gameplay profile and the character template.
+- Character profiles now influence preference among Stockfish candidates rather than inventing objective chess evaluations.
+- Kept authored opening lines and `freeformWeight` unchanged.
+- Added explicit Stockfish failure handling; there is no legacy-engine fallback.
+- Updated diagnostics to identify Stockfish depth, MultiPV, objective scores, character adjustments, and final selection.
