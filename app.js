@@ -230,14 +230,14 @@ function updateMatchMemory(move){
  memory.lastPiece=move.piece;memory.lastTo=move.to;
 }
 
-const STOCKFISH_URL="https://cdn.jsdelivr.net/npm/stockfish@18.0.8/bin/stockfish-18-asm.js";
+const STOCKFISH_URL="https://unpkg.com/stockfish@18.0.8/bin/stockfish-18-asm.js";
 class StockfishService{
  constructor(){this.worker=null;this.readyPromise=null;this.pending=null;}
  async ready(){
   if(this.readyPromise)return this.readyPromise;
   this.readyPromise=(async()=>{
    const response=await fetch(STOCKFISH_URL);
-   if(!response.ok)throw new Error(`Stockfish download failed (${response.status})`);
+   if(!response.ok)throw new Error(`Stockfish download failed from ${STOCKFISH_URL} (${response.status} ${response.statusText})`);
    const source=await response.text();
    const url=URL.createObjectURL(new Blob([source],{type:"text/javascript"}));
    this.worker=new Worker(url);

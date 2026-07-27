@@ -1,3 +1,10 @@
+# Phase 13.0.1 — Stockfish source fix
+
+- Replaced the blocked jsDelivr Stockfish URL with the pinned UNPKG package file.
+- Kept Stockfish 18 as the only AI analysis engine.
+- Added the exact failed URL, HTTP status, and status text to initialization errors.
+- No custom chess engine or fallback move engine was added.
+
 # Phase 12.2 — Complete Profile Wiring
 
 - Removed `playstyle` completely; broad string labels no longer affect AI behavior.
