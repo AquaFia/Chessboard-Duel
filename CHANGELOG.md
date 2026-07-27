@@ -1,3 +1,22 @@
+# Phase 13 — Stockfish Hybrid Restoration
+
+- Restored Stockfish 18 lite single-threaded as the objective chess-analysis layer.
+- Added UCI MultiPV analysis restricted to each character's perceived candidate set.
+- Converted AI move selection to asynchronous analysis.
+- Restored `estimatedElo` as a calibration target and analysis-budget input.
+- Preserved authored opening lines and `freeformWeight`.
+- Kept the handcrafted evaluator only as a visible emergency fallback.
+- Expanded diagnostics with engine source, target Elo, budget, MultiPV, objective score, perceived score, and personality adjustment.
+
+# Phase 12.2 — Complete Profile Wiring
+
+- Removed `playstyle` completely; broad string labels no longer affect AI behavior.
+- Removed the duplicate `cognitiveModel`; the engine now derives cognition directly from aptitude, current skill, behavior, decision, and core personality values.
+- Removed `estimatedElo` because it duplicated strength fields without a distinct gameplay responsibility.
+- Wired every remaining profile value into candidate discovery, threat detection, search, evaluation, intent selection, plan persistence, move preference, adaptation, or AI pacing.
+- Added structured plan commitment/flexibility behavior and phase-specific knowledge effects.
+- No prose parsing, playstyle keyword matching, compatibility fallback, or dead profile fields remain.
+
 # Phase 12.1 Flavor-Field Cleanup
 
 - Removed unused `openingPhilosophy`, `signatureBehaviors`, `dialogueStyle`, `expressionStyle`, `engineNotes`, and `designerNotes` fields from every character profile and the template.
