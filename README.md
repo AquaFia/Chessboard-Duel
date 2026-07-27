@@ -242,65 +242,21 @@ retaliation
 Relationship-specific dialogue may override these events in the same way as
 other dialogue. When no contextual line exists, the normal move event is used.
 
-## Phase 10 — Human Strength Simulation (historical)
+## Phase 13.0 — Stockfish-only engine
 
-Phase 10 separated chess strength from personality before the Stockfish-only architecture replaced its custom search. Estimated Elo now controls search depth, evaluation noise, candidate breadth, and conversion reliability. Stronger characters calculate farther and preserve winning advantages more consistently, while weaker characters make believable mistakes shaped by their own personality.
+Stockfish 18 is the sole AI analysis engine. The removed handcrafted evaluator, minimax search, alpha-beta search, candidate-discovery engine, and fallback move engine are not retained.
 
-Key changes:
-
-- Elo-driven 1–3 ply alpha-beta search (removed in Phase 13.1)
-- Character-specific evaluation noise
-- Skill-sensitive candidate selection
-- Draw, repetition, and stalemate penalties while winning
-- Conversion strength derived from endgame knowledge, practical accuracy, and discipline
-- Personality now distorts perception without overpowering large objective differences
-
-
-## Phase 12 — Intent-Based Chess
-
-Phase 12 replaces the old direct personality-scoring path with an intent-driven move pipeline:
+The current move pipeline is:
 
 ```text
-Position Analysis
-→ Intent Selection
-→ Plan Construction
-→ Candidate Evaluation
-→ Skill Distortion
-→ Final Selection
+Authored opening line / freeform roll
+→ Stockfish MultiPV analysis
+→ Character JSON preference adjustment
+→ Final move among Stockfish candidates
 ```
 
-The runtime now creates one objective position report covering game phase, material balance, center state, king safety, development, initiative, tension, and passed-pawn potential. Each character then selects an intent from that shared report according to their chess skill and personality.
+`chess.js` remains only as the board-state and rules library. It validates and applies moves, maintains FEN/history, and detects game completion; it does not evaluate positions or choose AI moves.
 
-Supported intents include emergency defense, development, technical conversion, restricting counterplay, simplification, counterattack, complication, danger reduction, king attack, tactical opportunity, worst-piece improvement, pawn breaks, initiative, passed-pawn advancement, and general positional improvement.
+Every character profile includes `estimatedElo`. It sets the broad Stockfish depth budget, while current skill values refine depth, MultiPV breadth, and the objective-score tolerance within which personality may choose a different candidate.
 
-The selected intent builds a short priority plan. Candidate moves are evaluated against that plan before Elo-based perception noise and candidate breadth are applied. The current intent is also surfaced in the match status text.
-
-The superseded `personalityScore()` and `moveScore()` functions were removed rather than retained as fallback code. Opening identity, adaptive memory, dialogue, and match review remain integrated. The alpha-beta search described in this historical phase was removed completely in Phase 13.1.
-
-## Phase 12.1 — Perception, Candidate Discovery, and Calibration
-
-Phase 12.1 replaces the assumption that every character seriously analyzes every legal move. The engine now follows one universal sequence for all imported character profiles:
-
-1. Generate legal moves for chess-rule enforcement.
-2. Discover a skill-dependent subset of candidate moves.
-3. Calculate and perceive consequences according to cognitive skill.
-4. Apply personality-driven intent and move preferences.
-5. Choose among the moves the character actually considered.
-
-Lower-skilled players can now omit strong moves, miss reply tactics, and misjudge consequences instead of merely adding noise after complete analysis. Higher-skilled players consider more candidates and perceive tactical replies more reliably. Personality remains equally important through intent, aggression, caution, risk, material preference, positional preference, and plan execution.
-
-The diagnostics panel now reports legal moves, moves noticed, moves analyzed by Stockfish, omitted moves, whether reply tactics were perceived, and separate skill/personality contributions.
-
-
-## Phase 12.2 profile contract
-
-The gameplay profile contains `estimatedElo`, `corePersonality`, `chessAptitude`, `currentChessSkill`, `behaviorModel`, and `decisionModel`. Every numeric field is consumed by the AI. `playstyle`, `cognitiveModel`, and prose-only authoring fields are intentionally absent. Scripted opening lines remain in `openingProfile`, including `freeformWeight`.
-
-
-## Phase 13 Stockfish hybrid engine
-
-Stockfish 18 lite single-threaded is loaded in the browser from jsDelivr and used through UCI MultiPV analysis. Character perception first limits the legal moves the character notices. Stockfish objectively analyzes only that noticed set. The character profile then distorts the evaluation and chooses among the candidates according to skill, behavior, and decision traits.
-
-`personalityProfile.estimatedElo` is restored as a calibration target and helps set the analysis-time envelope. It never replaces the detailed skill profile. Stockfish is the sole chess-analysis engine: there is no handcrafted evaluator, minimax search, compatibility path, or emergency move generator. If Stockfish cannot initialize or complete an analysis, AI play stops and the interface reports the error. Because the project fetches JSON modules and WebAssembly, serve it through GitHub Pages or another HTTP server rather than opening `index.html` directly from disk.
-
-Stockfish.js and Stockfish are GPLv3 software. This project loads the unmodified `stockfish` npm distribution from jsDelivr; its source and license are available from the package repository.
+When Stockfish cannot load or analyze, the game pauses and displays an explicit error. There is deliberately no alternate engine or compatibility fallback.

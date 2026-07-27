@@ -67,7 +67,7 @@
     "draw": ""
   },
   "personalityProfile": {
-    "estimatedElo": 1500,
+    "estimatedElo": 1200,
     "corePersonality": {
       "aggression": 50,
       "riskTolerance": 50,
