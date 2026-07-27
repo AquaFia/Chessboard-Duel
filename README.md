@@ -290,3 +290,17 @@ Phase 12.1 replaces the assumption that every character seriously analyzes every
 Lower-skilled players can now omit strong moves, miss reply tactics, and misjudge consequences instead of merely adding noise after complete analysis. Higher-skilled players consider more candidates and perceive tactical replies more reliably. Personality remains equally important through intent, aggression, caution, risk, material preference, positional preference, and plan execution.
 
 The diagnostics panel now reports legal moves, moves noticed, omitted moves, whether the best engine move was noticed, whether reply tactics were perceived, and separate skill/personality contributions.
+
+
+## Phase 12.2 profile contract
+
+The gameplay profile contains `estimatedElo`, `corePersonality`, `chessAptitude`, `currentChessSkill`, `behaviorModel`, and `decisionModel`. Every numeric field is consumed by the AI. `playstyle`, `cognitiveModel`, and prose-only authoring fields are intentionally absent. Scripted opening lines remain in `openingProfile`, including `freeformWeight`.
+
+
+## Phase 13 Stockfish hybrid engine
+
+Stockfish 18 lite single-threaded is loaded in the browser from jsDelivr and used through UCI MultiPV analysis. Character perception first limits the legal moves the character notices. Stockfish objectively analyzes only that noticed set. The character profile then distorts the evaluation and chooses among the candidates according to skill, behavior, and decision traits.
+
+`personalityProfile.estimatedElo` is restored as a calibration target and helps set the analysis-time envelope. It never replaces the detailed skill profile. If Stockfish cannot load, the old handcrafted evaluator is retained only as an explicitly reported emergency fallback. Because the project fetches JSON modules and WebAssembly, serve it through GitHub Pages or another HTTP server rather than opening `index.html` directly from disk.
+
+Stockfish.js and Stockfish are GPLv3 software. This project loads the unmodified `stockfish` npm distribution from jsDelivr; its source and license are available from the package repository.

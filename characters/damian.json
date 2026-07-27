@@ -162,6 +162,7 @@
     "draw": "neutral"
   },
   "personalityProfile": {
+    "estimatedElo": 2275,
     "corePersonality": {
       "aggression": 64,
       "riskTolerance": 34,
@@ -197,7 +198,6 @@
       "adaptationDuringGames": 58
     },
     "currentChessSkill": {
-      "estimatedElo": "1600–1800",
       "candidateAwareness": 50,
       "threatDetection": 50,
       "tacticalVision": 50,
@@ -211,29 +211,6 @@
       "conversion": 50,
       "practicalAccuracy": 76,
       "timeManagement": 72
-    },
-    "playstyle": [
-      "Strategic",
-      "Methodical",
-      "Positional",
-      "Technical",
-      "Defensive",
-      "Counterattacking",
-      "Pragmatic",
-      "Solid",
-      "Psychological"
-    ],
-    "cognitiveModel": {
-      "vision": 96,
-      "calculation": 94,
-      "evaluation": 96,
-      "planning": 95,
-      "conversion": 94,
-      "defense": 90,
-      "initiative": 68,
-      "confidence": 66,
-      "adaptability": 91,
-      "riskTolerance": 30
     },
     "behaviorModel": {
       "captureConfidence": 50,
