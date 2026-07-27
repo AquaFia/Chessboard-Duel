@@ -1,4 +1,4 @@
-# Chessboard Duel — Phase 13.1: Stockfish Request Manager
+# Chessboard Duel — Phase 13.2: Stockfish Request Manager
 
 Stockfish 18 remains the only chess analysis engine. This phase removes overlapping analysis failures by routing every AI move request through one request manager. Only one Stockfish `go` command can be active at a time, duplicate UI requests are ignored, and analysis results are discarded when the board or match changes before the result returns.
 
@@ -260,3 +260,8 @@ Authored opening line / freeform roll
 Every character profile includes `estimatedElo`. It sets the broad Stockfish depth budget, while current skill values refine depth, MultiPV breadth, and the objective-score tolerance within which personality may choose a different candidate.
 
 When Stockfish cannot load or analyze, the game pauses and displays an explicit error. There is deliberately no alternate engine or compatibility fallback.
+
+
+## Phase 13.2 correction
+
+Black no longer has its Stockfish evaluations inverted. See `CODE_AUDIT.md`.

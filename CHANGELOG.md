@@ -1,3 +1,10 @@
+# Phase 13.2 — Color Score Fix and Code Audit
+
+- Fixed Black-side Stockfish score inversion.
+- Confirmed Stockfish UCI scores are consumed from the side-to-move perspective for both colors.
+- Audited runtime functions, declarations, Stockfish entry points, and legacy engine paths.
+- Added `CODE_AUDIT.md` with findings and the remaining character-schema note.
+
 # Phase 13.1 — Stockfish Request Manager
 
 - Replaced the single-use Stockfish service with a serialized `StockfishManager`.
