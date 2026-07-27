@@ -1,3 +1,10 @@
+## Phase 12.1 — Opening Philosophy Cleanup (corrected)
+
+- Removed the descriptive `personalityProfile.openingPhilosophy` field from every character and the character template.
+- Preserved `openingProfile.white.freeformWeight` and `openingProfile.black.freeformWeight`.
+- Preserved weighted freeform selection for experimental characters such as Jace.
+- Preserved all authored opening lines and the fallback to normal move selection after a deviation.
+
 # Phase 12 — Cognitive Architecture
 
 - Replaced Elo-based strength control with explicit per-character cognitive profiles.

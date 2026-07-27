@@ -20,7 +20,7 @@
   },
   "dialogue": {
     "opening": [
-      "Let\u2019s establish control before anyone invents a narrative.",
+      "Let’s establish control before anyone invents a narrative.",
       "The first move sets audience expectations."
     ],
     "move": [
@@ -64,7 +64,7 @@
       "Yes, I see the campaign. I am adjusting."
     ],
     "openingDeviation": [
-      "We are off-script. Fine\u2014I improvise better anyway.",
+      "We are off-script. Fine—I improvise better anyway.",
       "Theory has left the room. Presentation still matters."
     ],
     "failedPlan": [
@@ -225,7 +225,7 @@
       "adaptationDuringGames": 88
     },
     "currentChessSkill": {
-      "estimatedElo": "1400\u20131600",
+      "estimatedElo": "1400–1600",
       "candidateAwareness": 50,
       "threatDetection": 50,
       "tacticalVision": 50,
@@ -251,7 +251,6 @@
       "Aggressive",
       "Resourceful"
     ],
-    "openingPhilosophy": "Juno treats openings like branding: she studies enough theory to avoid embarrassment, then favors sharp, memorable, psychologically loaded lines that create initiative, traps, and early emotional pressure. She prefers openings that let her surprise opponents, preserve tension, and make them feel as if every safe-looking move might be bait.",
     "signatureBehaviors": [
       "Creates traps that look like opportunities",
       "Preserves queens whenever possible",

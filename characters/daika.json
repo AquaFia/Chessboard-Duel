@@ -36,7 +36,7 @@
       "Your king is in danger. Let us slow down."
     ],
     "checked": [
-      "Oh\u2014okay. I hear the warning.",
+      "Oh—okay. I hear the warning.",
       "That is frightening, but not final."
     ],
     "winning": [
@@ -225,7 +225,6 @@
       "Psychological",
       "Supportive"
     ],
-    "openingPhilosophy": "Daika approaches openings as a way to make the board feel safe before conflict escalates. She prefers calm development, stable pawn structures, early king safety, and familiar routes that reduce emotional noise. She is willing to adapt when the opponent leaves theory, but she does not seek chaos for its own sake; her ideal opening creates enough structure that both danger and response can be understood gently.",
     "signatureBehaviors": [
       "Develops pieces calmly before attacking",
       "Protects her king early",

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "id": "jace",
-  "name": "Jacey \u201cJace\u201d Cosmo",
+  "name": "Jacey “Jace” Cosmo",
   "shortName": "Jace",
   "talent": "Ultimate Cryptologist",
   "theme": {
@@ -23,11 +23,11 @@
   "dialogue": {
     "opening": [
       "Every opening is basically a cipher key.",
-      "Okay, show me the pattern you\u2019re hiding."
+      "Okay, show me the pattern you’re hiding."
     ],
     "move": [
       "That changes the key. Interesting.",
-      "I\u2019m testing a hypothesis."
+      "I’m testing a hypothesis."
     ],
     "capture": [
       "Evidence acquired!",
@@ -43,7 +43,7 @@
     ],
     "winning": [
       "I think the position is starting to confess.",
-      "There it is\u2014the repeating pattern!"
+      "There it is—the repeating pattern!"
     ],
     "losing": [
       "This puzzle is being extremely rude.",
@@ -81,7 +81,7 @@
   "relationships": {
     "juno": {
       "opening": [
-        "Okay, Juno\u2014show me which part of the board you already turned into a narrative.",
+        "Okay, Juno—show me which part of the board you already turned into a narrative.",
         "You look way too pleased with this position, and we have not even started."
       ],
       "move": [
@@ -115,7 +115,7 @@
       "freeformWeight": 55,
       "lines": [
         {
-          "name": "R\u00e9ti Opening",
+          "name": "Réti Opening",
           "moves": [
             "Nf3",
             "d5",
@@ -252,7 +252,6 @@
       "Psychological",
       "Pragmatic"
     ],
-    "openingPhilosophy": "Jace treats openings as experiments rather than memorized scripts. She learns principles quickly, then tests strange move orders, gambits, traps, and offbeat ideas to understand why they work or fail. She prefers openings that create asymmetry, hidden tactics, and immediate mysteries to decode, and she may deliberately investigate moves others call bad just to find the reason.",
     "signatureBehaviors": [
       "Treats every position like a cipher",
       "Gets visibly excited when she spots a tactic",

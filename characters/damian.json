@@ -198,7 +198,7 @@
       "adaptationDuringGames": 58
     },
     "currentChessSkill": {
-      "estimatedElo": "1600\u20131800",
+      "estimatedElo": "1600–1800",
       "candidateAwareness": 50,
       "threatDetection": 50,
       "tacticalVision": 50,
@@ -224,7 +224,6 @@
       "Solid",
       "Psychological"
     ],
-    "openingPhilosophy": "Damian treats openings as researched systems rather than creative playgrounds. He prefers reputable, well-documented structures with clear plans, durable pawn formations, and low tolerance for unsound improvisation. He studies theory because preparation proves respect for the game and because an opening without a method is, to him, just a sequence of unjustified claims. When forced out of book, he does not panic, but he becomes visibly sharper and more judgmental, trying to define the new position by source, structure, weakness, and limit.",
     "signatureBehaviors": [
       "Keeps the position orderly unless disorder is objectively useful",
       "Punishes weak premises rather than chasing flashy attacks",
