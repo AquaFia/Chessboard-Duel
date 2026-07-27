@@ -1,5 +1,4 @@
 {
-  "schemaVersion": 2,
   "id": "juno",
   "name": "Juno Enyo",
   "shortName": "Juno",
@@ -20,7 +19,7 @@
   },
   "dialogue": {
     "opening": [
-      "Let\u2019s establish control before anyone invents a narrative.",
+      "Let’s establish control before anyone invents a narrative.",
       "The first move sets audience expectations."
     ],
     "move": [
@@ -64,7 +63,7 @@
       "Yes, I see the campaign. I am adjusting."
     ],
     "openingDeviation": [
-      "We are off-script. Fine\u2014I improvise better anyway.",
+      "We are off-script. Fine—I improvise better anyway.",
       "Theory has left the room. Presentation still matters."
     ],
     "failedPlan": [
@@ -225,7 +224,7 @@
       "adaptationDuringGames": 88
     },
     "currentChessSkill": {
-      "estimatedElo": "1400\u20131600",
+      "estimatedElo": "1400–1600",
       "candidateAwareness": 50,
       "threatDetection": 50,
       "tacticalVision": 50,
@@ -251,25 +250,6 @@
       "Aggressive",
       "Resourceful"
     ],
-    "openingPhilosophy": "Juno treats openings like branding: she studies enough theory to avoid embarrassment, then favors sharp, memorable, psychologically loaded lines that create initiative, traps, and early emotional pressure. She prefers openings that let her surprise opponents, preserve tension, and make them feel as if every safe-looking move might be bait.",
-    "signatureBehaviors": [
-      "Creates traps that look like opportunities",
-      "Preserves queens whenever possible",
-      "Overcomplicates calm positions when bored",
-      "Uses sacrifices as psychological detonators",
-      "Targets opponent confidence as much as material",
-      "Turns blunders into immediate swindle attempts",
-      "Refuses quiet draws unless the draw itself is humiliating",
-      "Plays faster when socially dominant",
-      "Gets quieter when genuinely threatened",
-      "Chooses stylish moves when they are nearly as good as practical moves",
-      "Learns repeated opponent habits inside the game",
-      "Uses the clock as part of the pressure"
-    ],
-    "dialogueStyle": "Bright, syrupy, performative, teasing, and condescending, with sudden pivots into cold analytical language. Juno talks often when comfortable, using pet names like 'babes' and 'bestie,' framing moves as story beats, trendlines, or public embarrassments. When losing control, she becomes quieter, sharper, and more sarcastic.",
-    "expressionStyle": "Juno begins with camera-ready confidence and playful smiles, sharpens into focused calculation during complex positions, becomes radiant and smug when winning, and turns brittle, sweetly predatory, or suddenly quiet when control slips. Her expressions should always feel performative, as if she knows someone is watching.",
-    "engineNotes": "Implement Juno as a high-pressure psychological tactician who values initiative, traps, imbalance, and opponent discomfort. Her move selector should favor forcing lines, queen activity, tactical threats, and practical complications, sometimes accepting slight objective risk for emotional or time-pressure payoff. She should dislike dry simplification and become more reckless when bored. Dialogue frequency should be high while she feels in control, drop when she is seriously calculating or losing, and spike again during traps, checks, sacrifices, and comeback attempts.",
-    "designerNotes": "Juno should not feel like a generic aggressive villain. She is a social architect playing chess as performance warfare. Her strongest identity is not raw attack, but narrative control: bait the opponent, make them choose the wrong story, then reveal that the trap was already staged. Her chess should feel stylish, manipulative, volatile, and highly watchable.",
     "cognitiveModel": {
       "vision": 78,
       "calculation": 72,
@@ -290,7 +270,7 @@
       "defensivePreference": 50,
       "materialGreed": 50,
       "sacrificeWillingness": 50,
-      "queenActivity": 50,
+      "queenActivity": 95,
       "pieceProtection": 50,
       "developmentPriority": 50
     },

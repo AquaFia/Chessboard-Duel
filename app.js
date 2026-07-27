@@ -38,7 +38,7 @@ async function loadCharacters(){
 }
 
 function validateCharacter(character,file){
- const required=["corePersonality","chessAptitude","currentChessSkill","playstyle","signatureBehaviors","cognitiveModel"];
+ const required=["corePersonality","chessAptitude","currentChessSkill","playstyle","cognitiveModel","behaviorModel"];
  if(!character.id)throw new Error(`${file} is missing id.`);
  if(!character.dialogue)throw new Error(`${character.id} is missing dialogue.`);
  if(!character.personalityProfile)throw new Error(`${character.id} is missing personalityProfile.`);
@@ -225,7 +225,7 @@ function generateBrain(c){
  const core=p.corePersonality;
  const apt=p.chessAptitude;
  const styles=p.playstyle;
- const signatures=p.signatureBehaviors;
+ const behavior=p.behaviorModel;
  const model=p.cognitiveModel;
  const tacticalStyle=includesText(styles,"tactical")||includesText(styles,"trickster");
  const strategicStyle=includesText(styles,"strategic")||includesText(styles,"positional");
@@ -255,7 +255,7 @@ function generateBrain(c){
   randomness:clamp01(.04+(1-evaluation)*.28+(1-calculation)*.18+pct(core.impulsiveness)*.13),
   blunderChance:clamp01(.004+(1-vision)*.075+(1-calculation)*.055+(1-evaluation)*.03),
   complexity:clamp01(pct(core.creativity)*.22+risk*.26+pct(core.curiosity)*.18+initiative*.2+(chaoticStyle?.14:0)),
-  queenPreference:includesText(signatures,"queen")?.95:.5,
+  queenPreference:pct(behavior.queenActivity),
   simplification:clamp01(defense*.34+pct(core.caution)*.28+planning*.2-risk*.18),
   pressure:clamp01(pct(core.bluffing)*.3+confidence*.22+initiative*.3+pct(core.aggression)*.12+(includesText(styles,"psychological")?.06:0))
  };

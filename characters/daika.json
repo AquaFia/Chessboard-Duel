@@ -1,5 +1,4 @@
 {
-  "schemaVersion": 2,
   "id": "daika",
   "name": "Daika Yume Nori",
   "shortName": "Daika",
@@ -36,7 +35,7 @@
       "Your king is in danger. Let us slow down."
     ],
     "checked": [
-      "Oh\u2014okay. I hear the warning.",
+      "Oh—okay. I hear the warning.",
       "That is frightening, but not final."
     ],
     "winning": [
@@ -225,28 +224,6 @@
       "Psychological",
       "Supportive"
     ],
-    "openingPhilosophy": "Daika approaches openings as a way to make the board feel safe before conflict escalates. She prefers calm development, stable pawn structures, early king safety, and familiar routes that reduce emotional noise. She is willing to adapt when the opponent leaves theory, but she does not seek chaos for its own sake; her ideal opening creates enough structure that both danger and response can be understood gently.",
-    "signatureBehaviors": [
-      "Develops pieces calmly before attacking",
-      "Protects her king early",
-      "Avoids unnecessary sacrifices",
-      "Prefers stable pawn structures",
-      "Looks for the move that reduces tension",
-      "Finds defensive resources under pressure",
-      "Counterattacks only after the opponent overextends",
-      "Hesitates before capturing unless the capture clearly helps",
-      "Uses quiet improving moves to calm the position",
-      "Notices repeated opponent patterns quickly",
-      "Struggles to deliver harsh finishing blows",
-      "Offers trades when the board feels overheated",
-      "Keeps playing gently even when winning",
-      "Becomes stronger when protecting a vulnerable position",
-      "Treats every threat as a signal to understand rather than a reason to panic"
-    ],
-    "dialogueStyle": "Daika speaks softly, warmly, and carefully, using breath, safety, balance, harm, worry, and next-step language. She rarely taunts and often sounds apologetic even when making strong moves. Her dialogue becomes more focused under pressure, more reassuring when losing, and quietly relieved when winning. She compliments sincerely and frames chess conflict as something to guide through rather than dominate.",
-    "expressionStyle": "Daika begins with a gentle, receptive expression and grows more focused as she reads the emotional shape of the game. Surprise appears as wide-eyed concern, frustration as quiet worry, and determination as soft but firm stillness. When winning she looks relieved rather than smug, and when losing she looks hurt but steady, as if trying to keep the board and herself from falling apart.",
-    "engineNotes": "Prioritize king safety, solid development, defensive resources, tension reduction, and moves that stabilize the position. Daika should avoid speculative sacrifices, reckless pawn storms, and unnecessary complications, but she should become resourceful when defending or protecting a vulnerable position. Her move selector should favor safe improvements, prophylaxis, trades that reduce danger, and counterattacks only after the opponent creates clear weaknesses. Dialogue should be gentle and moderately frequent, increasing when the position becomes tense or when she is checked. Emotional state should remain steadier than most characters, but visible concern should rise when pieces become endangered or the board becomes chaotic.",
-    "designerNotes": "Daika should not feel like a weak player just because she is gentle. Her chess personality is protective, intuitive, and emotionally intelligent: she reads danger early, calms chaotic positions, and finds humane-looking defensive resources. Her weakness is reluctance to harm, low aggression, and hesitation when a decisive capture or attack is required. She is most authentic as a soft guardian opponent who wins by keeping the board alive, safe, and balanced until the opponent's own pressure becomes the thing that fails.",
     "cognitiveModel": {
       "vision": 38,
       "calculation": 34,

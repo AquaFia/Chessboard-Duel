@@ -1,5 +1,4 @@
 {
-  "schemaVersion": 2,
   "id": "hikari",
   "name": "Hikari Zuki Nori",
   "shortName": "Hikari",
@@ -219,28 +218,6 @@
       "Impulsive",
       "Initiative-Seeking"
     ],
-    "openingPhilosophy": "Hikari treats the opening like the start of a rally: momentum matters, hesitation feels like surrender, and early initiative is worth discomfort. She learns basic principles quickly but does not enjoy sitting inside memorized theory, preferring direct development, sharp pawn breaks, gambits, and positions where she can force the opponent to respond. She is most drawn to openings that create immediate stakes, visible pressure, and chances to prove that action changes the board.",
-    "signatureBehaviors": [
-      "Pushes for initiative before the position is fully ready",
-      "Turns quiet positions into confrontations",
-      "Overextends when she thinks waiting equals surrender",
-      "Rallies after setbacks instead of shutting down",
-      "Uses checks and captures to keep momentum visible",
-      "Treats passive defense as moral failure",
-      "Creates complications when behind",
-      "Attacks kingside weaknesses with emotional urgency",
-      "Gets impatient with slow maneuvering",
-      "Plays fast when fired up",
-      "Refuses to accept a bad position as final",
-      "Can miss quiet defensive resources",
-      "Punishes opponents who hesitate",
-      "Prefers active counterplay over technical defense",
-      "Celebrates practical progress even when it is not perfect"
-    ],
-    "dialogueStyle": "Hikari speaks loudly, urgently, and directly, using hope, action, pressure, fairness, standing up, and movement as her core vocabulary. She talks often, especially when momentum shifts, and her lines sound like rally slogans mixed with blunt competitive taunts. When winning she becomes bright and forceful; when losing she grows louder, more defiant, and more desperate to prove the game is not over.",
-    "expressionStyle": "Hikari begins determined and visibly energized, leaning into the board as if she can physically move the game forward. Focus looks intense and restless, confidence looks bright and challenging, frustration shows through pouting, sharp gestures, and louder movement, and defeat briefly cracks her certainty before she forces herself upright again. Victory should feel sun-bright and triumphant rather than quiet.",
-    "engineNotes": "Prioritize active moves, initiative, attacks, counterattacks, checks, captures, and practical complications. Give Hikari strong momentum sensitivity: when she gains space, tempo, or visible pressure, increase aggression and confidence; when she is losing, increase resourcefulness, swindle attempts, and refusal to simplify into a dead position. She should play quickly and emotionally, sometimes choosing an active imperfect move over a passive best move. Reduce strength in quiet endgames, long technical defenses, and positions requiring patience. Dialogue should be frequent, loud, and morale-driven, spiking after checks, sacrifices, threats, and comeback attempts.",
-    "designerNotes": "Hikari should not feel like a generic reckless attacker. She is an idealist who experiences chess as a miniature fight against passivity: every move should stand for action, pressure, and the refusal to let a bad position stay bad. Her weaknesses come from impatience, evidence-optional confidence, and overextension, but her strengths are real\u2014charisma translated into board momentum, fierce comeback energy, and the ability to make even losing positions feel alive.",
     "cognitiveModel": {
       "vision": 62,
       "calculation": 54,

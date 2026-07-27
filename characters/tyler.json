@@ -1,7 +1,6 @@
 {
-  "schemaVersion": 2,
   "id": "tyler",
-  "name": "Tyler \u201cTy\u201d Ezra",
+  "name": "Tyler “Ty” Ezra",
   "shortName": "Ty",
   "talent": "Ultimate Survivalist",
   "theme": {
@@ -20,8 +19,8 @@
   },
   "dialogue": {
     "opening": [
-      "Let\u2019s do this the safe way.",
-      "Alright. We\u2019ll see what the position gives us."
+      "Let’s do this the safe way.",
+      "Alright. We’ll see what the position gives us."
     ],
     "move": [
       "That should keep things stable.",
@@ -37,11 +36,11 @@
     ],
     "checked": [
       "Noted. Adjusting.",
-      "That\u2019s fine. I have options."
+      "That’s fine. I have options."
     ],
     "winning": [
       "The position is starting to hold together.",
-      "Let\u2019s not rush the conversion."
+      "Let’s not rush the conversion."
     ],
     "losing": [
       "This is still manageable.",
@@ -57,7 +56,7 @@
     ],
     "opponentRepeating": [
       "You keep returning to that route.",
-      "Same piece again. I\u2019ll keep that in mind."
+      "Same piece again. I’ll keep that in mind."
     ],
     "underPressure": [
       "Breathe. Check the exits first.",
@@ -72,7 +71,7 @@
       "Alright. New route."
     ],
     "retaliation": [
-      "Then I\u2019ll take this back.",
+      "Then I’ll take this back.",
       "Exchange balanced."
     ]
   },
@@ -194,7 +193,7 @@
       "adaptationDuringGames": 87
     },
     "currentChessSkill": {
-      "estimatedElo": "1200\u20131400",
+      "estimatedElo": "1200–1400",
       "candidateAwareness": 50,
       "threatDetection": 50,
       "tacticalVision": 50,
@@ -221,28 +220,6 @@
       "Psychological",
       "Technical"
     ],
-    "openingPhilosophy": "Tyler approaches openings like route planning before a dangerous expedition: he wants reliable structures, known exits, and positions where one mistake does not immediately collapse everything. He studies enough theory to avoid being ambushed, favors solid development over dramatic attacks, and prefers openings that preserve flexibility while reducing avoidable risk. He is willing to leave preparation if the board demands it, but he does so carefully, checking for tactical hazards before committing.",
-    "signatureBehaviors": [
-      "Builds safe positions before attacking",
-      "Checks escape squares before launching pressure",
-      "Trades dangerous enemy pieces even if the trade is not flashy",
-      "Avoids speculative sacrifices unless the compensation is practical",
-      "Redirects sharp positions into controllable structures",
-      "Punishes overextension calmly instead of immediately forcing chaos",
-      "Collects small advantages through patience and restraint",
-      "Uses prophylactic moves earlier than expected",
-      "Becomes harder to break down as the game continues",
-      "Prefers endgames where risk can be measured",
-      "Bluffs through harmless-looking moves that quietly remove counterplay",
-      "Talks less when genuinely stressed",
-      "Finds resourceful defensive setups in bad positions",
-      "Takes responsibility for the board state after a mistake",
-      "Wins by containment more often than direct assault"
-    ],
-    "dialogueStyle": "Tyler speaks calmly, politely, and sparingly, using practical safety, route, risk, pressure, and option-based vocabulary. He rarely taunts and tends to frame strong moves as necessary corrections rather than displays of dominance. When comfortable, his tone is mild and reassuring; when pressured, he becomes quieter, more clipped, and more procedural, as if walking himself through an emergency checklist.",
-    "expressionStyle": "Tyler begins with a calm, guarded focus and soft polite neutrality. His thinking face is still and observant, with narrowed green eyes tracking danger routes across the board. Confidence appears as a small restrained smile rather than smugness, surprise as a brief alert widening of the eyes, frustration as a thin almost-smile, and defeat as quiet resignation followed by immediate analysis of what went wrong.",
-    "engineNotes": "Implement Tyler as a solid, adaptive, risk-aware opponent who values king safety, piece coordination, prophylaxis, and practical conversion. His move selector should prefer stable improvements, defensive resources, useful trades, and counterattacks that punish the opponent's unsafe advances. He should avoid unnecessary complications when equal or better, but become very resourceful when worse, seeking fortresses, perpetual checks, simplification, and opponent overreach. Dialogue should be moderate in normal positions, sparse during stress or deep calculation, and slightly warmer when he stabilizes danger. Emotional state should remain controlled, with visible spikes only after sudden threats, blunders, or positions that feel impossible to contain.",
-    "designerNotes": "Tyler should not feel like a passive defensive character. His caution is active, practical, and survival-trained: he wins by reading danger early, preparing exits, reducing chaos, and letting opponents exhaust themselves against a position that refuses to collapse. His chess personality should feel like a calm person with a map, a checklist, and five contingency plans\u2014polite on the surface, quietly controlling underneath, and far more dangerous when the position becomes a survival problem.",
     "cognitiveModel": {
       "vision": 70,
       "calculation": 65,

@@ -1,5 +1,4 @@
 {
-  "schemaVersion": 50,
   "id": "",
   "name": "",
   "shortName": "",
@@ -119,12 +118,6 @@
       "timeManagement": 50
     },
     "playstyle": [],
-    "openingPhilosophy": "",
-    "signatureBehaviors": [],
-    "dialogueStyle": "",
-    "expressionStyle": "",
-    "engineNotes": "",
-    "designerNotes": "",
     "cognitiveModel": {
       "vision": 50,
       "calculation": 50,
