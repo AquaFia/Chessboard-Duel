@@ -1,3 +1,13 @@
+# Phase 13.1 — Stockfish Request Manager
+
+- Replaced the single-use Stockfish service with a serialized `StockfishManager`.
+- Removed the overlapping-analysis exception during normal play.
+- Centralized all AI move requests through `requestAiMove()`.
+- Prevented duplicate Run/Next Move requests from starting concurrent searches.
+- Added match-generation and FEN checks so stale analysis cannot alter a reset, rewound, or changed game.
+- Kept Stockfish 18 as the only chess analysis engine.
+- Added no compatibility layer and restored no homemade evaluator or search fallback.
+
 # Phase 13.0.1 — Stockfish source fix
 
 - Replaced the blocked jsDelivr Stockfish URL with the pinned UNPKG package file.

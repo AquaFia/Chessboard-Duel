@@ -1,27 +1,37 @@
-# Engine Architecture — Phase 13.0
+# Engine Architecture — Phase 13.1
 
 ## Authoritative chess engine
 
-Stockfish 18 is the only chess engine used for AI move analysis and ranking.
+Stockfish 18 is the only move-analysis engine. It supplies MultiPV candidates and objective evaluations.
 
-The application requests MultiPV analysis from Stockfish and receives objective candidate evaluations. Character JSON data may adjust which Stockfish-approved candidate is preferred, within a skill-derived centipawn tolerance.
+`chess.js` is not an AI engine in this project. It maintains the board, validates legal moves, records history, and detects game-ending conditions.
 
-## Retained non-engine chess dependency
+## Request path
 
-`chess.js` remains the board rules/state library. It validates legal moves, applies moves, tracks FEN/history, and detects game-over conditions. It does not evaluate positions or choose AI moves.
+```text
+Run / Next Move
+      ↓
+requestAiMove()
+      ↓
+StockfishManager queue
+      ↓
+Stockfish MultiPV analysis
+      ↓
+Character preference scoring
+      ↓
+Validated move applied through chess.js
+```
 
-## Removed systems
+Only `StockfishManager` sends UCI `go` commands. It serializes requests so Stockfish never receives overlapping searches.
 
-- handcrafted material/mobility evaluator
-- custom minimax search
-- alpha-beta search
-- custom candidate discovery engine
-- custom threat-search implementation
-- custom positional scoring engine
-- fallback AI move engine
+## Stale-result protection
 
-There is deliberately no compatibility path to the removed engine. When Stockfish cannot initialize or analyze, the match pauses and shows an explicit failure instead of silently switching engines.
+Every AI request records the current match generation and FEN. If a match is reset, rewound, or otherwise changed before analysis completes, that result is discarded and cannot update the board.
 
-## Opening behavior
+## Explicitly absent
 
-Each character retains authored white and black opening lines plus `freeformWeight`. A chosen valid book move is played directly. Once the character leaves or exhausts the authored line, Stockfish MultiPV analysis becomes authoritative.
+- custom minimax or alpha-beta search
+- custom board evaluator
+- alternative candidate generator
+- random legal-move fallback
+- backwards-compatibility engine path

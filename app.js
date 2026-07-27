@@ -231,8 +231,8 @@ function updateMatchMemory(move){
 }
 
 const STOCKFISH_URL="https://unpkg.com/stockfish@18.0.8/bin/stockfish-18-asm.js";
-class StockfishService{
- constructor(){this.worker=null;this.readyPromise=null;this.pending=null;}
+class StockfishManager{
+ constructor(){this.worker=null;this.readyPromise=null;this.pending=null;this.queue=Promise.resolve();}
  async ready(){
   if(this.readyPromise)return this.readyPromise;
   this.readyPromise=(async()=>{
@@ -243,14 +243,21 @@ class StockfishService{
    this.worker=new Worker(url);
    URL.revokeObjectURL(url);
    this.worker.onmessage=event=>this.handle(String(event.data||""));
-   this.worker.onerror=event=>{if(this.pending){this.pending.reject(new Error(event.message||"Stockfish worker failed"));this.pending=null;}};
+   this.worker.onerror=event=>{
+    const pending=this.pending;
+    this.pending=null;
+    if(pending)pending.reject(new Error(event.message||"Stockfish worker failed"));
+   };
    await this.commandUntil("uci","uciok");
    await this.commandUntil("isready","readyok");
   })();
   return this.readyPromise;
  }
  send(command){this.worker.postMessage(command);}
- commandUntil(command,token){return new Promise((resolve,reject)=>{this.pending={type:"token",token,resolve,reject};this.send(command);});}
+ commandUntil(command,token){
+  if(this.pending)throw new Error(`Stockfish protocol collision while waiting for ${token}.`);
+  return new Promise((resolve,reject)=>{this.pending={type:"token",token,resolve,reject};this.send(command);});
+ }
  handle(line){
   const pending=this.pending;if(!pending)return;
   if(pending.type==="token"&&line.includes(pending.token)){this.pending=null;pending.resolve();return;}
@@ -259,13 +266,26 @@ class StockfishService{
    const parsed=parseStockfishInfo(line);
    if(parsed)pending.lines.set(parsed.multipv,parsed);
   }
-  if(line.startsWith("bestmove ")){this.pending=null;pending.resolve([...pending.lines.values()].sort((a,b)=>a.multipv-b.multipv));}
+  if(line.startsWith("bestmove ")){
+   this.pending=null;
+   pending.resolve([...pending.lines.values()].sort((a,b)=>a.multipv-b.multipv));
+  }
  }
- async analyze(fen,{depth,multipv}){
-  await this.ready();
-  if(this.pending)throw new Error("Stockfish received overlapping analysis requests.");
-  this.send("ucinewgame");this.send(`setoption name MultiPV value ${multipv}`);this.send(`position fen ${fen}`);
-  return new Promise((resolve,reject)=>{this.pending={type:"analysis",lines:new Map(),resolve,reject};this.send(`go depth ${depth}`);});
+ analyze(fen,{depth,multipv}){
+  const task=async()=>{
+   await this.ready();
+   if(this.pending)throw new Error("Stockfish manager entered an invalid busy state.");
+   this.send("ucinewgame");
+   this.send(`setoption name MultiPV value ${multipv}`);
+   this.send(`position fen ${fen}`);
+   return new Promise((resolve,reject)=>{
+    this.pending={type:"analysis",lines:new Map(),resolve,reject};
+    this.send(`go depth ${depth}`);
+   });
+  };
+  const result=this.queue.then(task,task);
+  this.queue=result.then(()=>undefined,()=>undefined);
+  return result;
  }
 }
 function parseStockfishInfo(line){
@@ -277,7 +297,9 @@ function parseStockfishInfo(line){
  const score=mate?Math.sign(Number(mate[1]))*(100000-Math.min(999,Math.abs(Number(mate[1])))*100):Number(cp[1]);
  return {depth,multipv,score,mate:mate?Number(mate[1]):null,pv};
 }
-const stockfish=new StockfishService();
+const stockfish=new StockfishManager();
+let aiMoveRequestActive=false;
+let matchGeneration=0;
 function analysisBudget(character){
  const brain=brainFor(character),elo=brain.estimatedElo;
  const baseDepth=Math.round(8+(elo-600)/190);
@@ -372,7 +394,10 @@ async function chooseMove(character){
  const bookMove=openingMove(character);
  if(bookMove){character._intent="openingPreparation";character._cognitiveTrace={source:"opening book",chosen:bookMove.san};renderDiagnostics(character);return bookMove;}
  const budget=analysisBudget(character);
- const raw=await stockfish.analyze(game.fen(),budget);
+ const analyzedFen=game.fen();
+ const analyzedGeneration=matchGeneration;
+ const raw=await stockfish.analyze(analyzedFen,budget);
+ if(analyzedGeneration!==matchGeneration||game.fen()!==analyzedFen)return null;
  const side=game.turn();
  const candidates=raw.map(entry=>{
   const move=uciToLegalMove(entry.pv[0]);if(!move)return null;
@@ -551,11 +576,27 @@ function pauseMatch(){
  clearTimeout(timer);
  $("#play").textContent="▶ Run";
 }
+async function requestAiMove({resume=false}={}){
+ if(aiMoveRequestActive||game.isGameOver()||sideMode(game.turn())!=="ai")return;
+ aiMoveRequestActive=true;
+ const requestGeneration=matchGeneration;
+ const requestFen=game.fen();
+ const character=game.turn()==="w"?config.white:config.black;
+ try{
+  const move=await chooseMove(character);
+  if(!move||requestGeneration!==matchGeneration||game.fen()!==requestFen)return;
+  const made=game.move(move);
+  if(made)afterMove(made,resume);
+ }catch(error){
+  if(requestGeneration===matchGeneration)handleEngineFailure(error);
+ }finally{
+  aiMoveRequestActive=false;
+ }
+}
 async function playNextAiMove(){
  if(game.isGameOver()||sideMode(game.turn())!=="ai")return;
  pauseMatch();
- const c=game.turn()==="w"?config.white:config.black;
- try{const move=await chooseMove(c);if(move)afterMove(game.move(move),false);}catch(error){handleEngineFailure(error);}
+ await requestAiMove({resume:false});
 }
 function rebuildMatchMemory(){
  const history=game.history({verbose:true});
@@ -574,6 +615,7 @@ function rebuildMatchMemory(){
 function rewindOneMove(){
  if(!game.history().length)return;
  pauseMatch();
+ matchGeneration++;
  hideResult();
  clearMovePreview();
  clearOutcomeState();
@@ -616,8 +658,7 @@ function scheduleAi(){
  running=true;$("#play").textContent="❚❚ Pause";
  timer=setTimeout(async()=>{
   if(!running)return;
-  const c=game.turn()==="w"?config.white:config.black;
-  try{const move=await chooseMove(c);if(move){const made=game.move(move);afterMove(made)}}catch(error){handleEngineFailure(error);}
+  await requestAiMove({resume:true});
  },Math.max(120,Number($("#delay").value)*(1.35-.7*brainFor(game.turn()==="w"?config.white:config.black).moveSpeed)));
 }
 function clearOutcomeState(){
@@ -779,6 +820,9 @@ function finish(){
  showResult();
 }
 function startGame(){
+ pauseMatch();
+ matchGeneration++;
+ aiMoveRequestActive=false;
  hideResult();
  clearMovePreview();
  clearOutcomeState();
