@@ -4,209 +4,249 @@
   "shortName": "Daika",
   "talent": "Ultimate Empath",
   "theme": {
-    "primary": "#f7a8d8",
-    "secondary": "#f4c46f",
-    "panel": "#21172d"
+    "primary": "#F5A6C8",
+    "secondary": "#C76B3A",
+    "panel": "#3A2433"
   },
   "portraits": {},
   "fallbackPortrait": {
-    "hairTop": "#f6d36b",
-    "hairBottom": "#d99a4a",
-    "skin": "#f2c7ad",
-    "shirt": "#f6a4c9",
-    "eyes": "#c46b3a",
-    "accessory": "prism"
+    "hairTop": "#F3D36B",
+    "hairBottom": "#CFA047",
+    "skin": "#E0B086",
+    "shirt": "#F5A6C8",
+    "eyes": "#C76B3A",
+    "accessory": "#B788FF"
   },
   "dialogue": {
-    "opening": [
-      "Take a breath first. Then we can begin.",
-      "It is okay. We will find the safest way through."
-    ],
-    "move": [
-      "That feels a little steadier.",
-      "One careful step at a time."
-    ],
-    "capture": [
-      "I am sorry. That piece was hurting the position.",
-      "I did not want to take it, but leaving it there was worse."
-    ],
-    "check": [
-      "Check. Please be careful with your king.",
-      "Your king is in danger. Let us slow down."
-    ],
-    "checked": [
-      "Oh—okay. I hear the warning.",
-      "That is frightening, but not final."
-    ],
-    "winning": [
-      "The board feels calmer now.",
-      "I think the position is starting to breathe again."
-    ],
-    "losing": [
-      "This is difficult, but I am still here.",
-      "I need a gentler way out of this."
-    ],
-    "mate": [
-      "Checkmate. I hope that did not feel too harsh.",
-      "That is the end. Thank you for staying with it."
-    ],
-    "draw": [
-      "Maybe neither of us needed to break today.",
-      "A draw can still be a peaceful answer."
-    ],
-    "opponentRepeating": [
-      "You keep returning to that piece. Is something there worrying you?",
-      "That path keeps coming back. I should listen to it."
-    ],
-    "underPressure": [
-      "It is getting loud in here. Breathe, then answer.",
-      "I can feel the pressure. I just need one safe step."
-    ],
-    "openingDeviation": [
-      "Oh, we are leaving the familiar path. That is okay.",
-      "Different route, same goal: keep everyone safe."
-    ],
-    "failedPlan": [
-      "That did not help the way I hoped. Let me try another angle.",
-      "I misread the feeling of that position. I can adjust."
-    ],
-    "retaliation": [
-      "I am answering the harm, not trying to hurt you.",
-      "You pushed too hard. I have to restore balance."
-    ]
-  },
+  "opening": [
+    "Take a breath first. Then we can begin.",
+    "It’s okay. We’ll find the safest way through.",
+    "I’ll try my best. We can both breathe first.",
+    "It’s just a game, but I still want it to feel fair.",
+    "I’m ready when you are. No pressure."
+  ],
+  "move": [
+    "That feels a little steadier.",
+    "One careful step at a time.",
+    "Let’s make a little room here.",
+    "I think this helps the board settle.",
+    "This feels like the kindest place for it."
+  ],
+  "capture": [
+    "I’m sorry. That piece was hurting the position.",
+    "I didn’t want to take it, but leaving it there was worse.",
+    "That piece felt a little too exposed.",
+    "I promise that wasn’t personal.",
+    "Okay… removing this might calm things down."
+  ],
+  "check": [
+    "Check. Please be careful with your king.",
+    "Your king is in danger. Let’s slow down.",
+    "Your king needs attention now.",
+    "I think this puts pressure on you. Sorry.",
+    "That line felt important to name."
+  ],
+  "checked": [
+    "Oh—okay. I hear the warning.",
+    "That’s frightening, but not final.",
+    "Okay, that changes the feeling of the room.",
+    "I see it. Thank you for making it clear.",
+    "Deep breath. I need to make this safer."
+  ],
+  "winning": [
+    "The board feels calmer now.",
+    "I think the position is starting to breathe again.",
+    "I’m ahead, but I don’t want to rush you.",
+    "Let’s keep it careful. No one needs to panic.",
+    "I should make sure I don’t overreach."
+  ],
+  "losing": [
+    "This is difficult, but I’m still here.",
+    "I need a gentler way out of this.",
+    "I may have been too trusting with that piece.",
+    "Okay… there’s still a safe next step somewhere.",
+    "I need to stop trying to comfort the whole board."
+  ],
+  "mate": [
+    "Checkmate. I hope that didn’t feel too harsh.",
+    "That’s the end. Thank you for staying with it.",
+    "I didn’t want to corner you, but I think that’s it.",
+    "That’s checkmate? Oh… good game.",
+    "Thank you for playing with me."
+  ],
+  "draw": [
+    "Maybe neither of us needed to break today.",
+    "A draw can still be a peaceful answer.",
+    "A draw feels peaceful, honestly.",
+    "No one has to lose this one.",
+    "I think we both held on pretty well."
+  ],
+  "opponentRepeating": [
+    "You keep returning to that piece. Is something there worrying you?",
+    "That path keeps coming back. I should listen to it.",
+    "I think we’re circling the same feeling again.",
+    "This pattern is coming back around.",
+    "It’s okay if you need a pause, but I do notice it."
+  ],
+  "underPressure": [
+    "It’s getting loud in here. Breathe, then answer.",
+    "I can feel the pressure. I just need one safe step.",
+    "Too many needs at once… okay, prioritize.",
+    "I need a quieter move.",
+    "Breathe first. Then find the danger."
+  ],
+  "openingDeviation": [
+    "Oh, we’re leaving the familiar path. That’s okay.",
+    "Different route, same goal: keep everyone safe.",
+    "That changes the tone early.",
+    "Okay, new path. We can adapt.",
+    "I’ll stop assuming I know where this is going."
+  ],
+  "failedPlan": [
+    "That didn’t help the way I hoped. Let me try another angle.",
+    "I misread the feeling of that position. I can adjust.",
+    "That plan doesn’t feel safe anymore.",
+    "I think I was trying to protect the wrong thing.",
+    "Okay… that didn’t land how I hoped."
+  ],
+  "retaliation": [
+    "I’m answering the harm, not trying to hurt you.",
+    "You pushed too hard. I have to restore balance.",
+    "That hurt a little, but I understand the move.",
+    "I’ll respond without making it worse.",
+    "Okay. Let’s repair the position."
+  ]
+},
   "relationships": {},
   "openingProfile": {
     "white": {
-      "freeformWeight": 42,
+      "freeformWeight": 70,
       "lines": [
         {
+          "name": "Queen's Pawn Game",
+          "weight": 40,
+          "moves": [
+            "d4",
+            "d5",
+            "Nf3"
+          ]
+        },
+        {
+          "name": "London System",
+          "weight": 35,
+          "moves": [
+            "d4",
+            "d5",
+            "Bf4"
+          ]
+        },
+        {
           "name": "Italian Game",
+          "weight": 25,
           "moves": [
             "e4",
             "e5",
             "Nf3",
             "Nc6",
             "Bc4"
-          ],
-          "weight": 30
-        },
-        {
-          "name": "Queen's Pawn Game",
-          "moves": [
-            "d4",
-            "d5",
-            "Nf3"
-          ],
-          "weight": 24
-        },
-        {
-          "name": "London System",
-          "moves": [
-            "d4",
-            "d5",
-            "Bf4"
-          ],
-          "weight": 20
+          ]
         }
       ]
     },
     "black": {
-      "freeformWeight": 42,
+      "freeformWeight": 70,
       "lines": [
         {
+          "name": "Queen's Pawn Game",
+          "weight": 40,
+          "moves": [
+            "d4",
+            "d5",
+            "Nf3",
+            "Nf6"
+          ]
+        },
+        {
+          "name": "King's Pawn Game",
+          "weight": 35,
+          "moves": [
+            "e4",
+            "e5",
+            "Nf3",
+            "Nc6"
+          ]
+        },
+        {
           "name": "Caro-Kann Defense",
+          "weight": 25,
           "moves": [
             "e4",
             "c6",
             "d4",
             "d5"
-          ],
-          "weight": 28
-        },
-        {
-          "name": "Queen's Gambit Declined",
-          "moves": [
-            "d4",
-            "d5",
-            "c4",
-            "e6"
-          ],
-          "weight": 24
-        },
-        {
-          "name": "Four Knights Game",
-          "moves": [
-            "e4",
-            "e5",
-            "Nf3",
-            "Nc6",
-            "Nc3",
-            "Nf6"
-          ],
-          "weight": 18
+          ]
         }
       ]
     }
   },
-  "defaultExpression": "gentle",
+  "defaultExpression": "",
   "expressionMap": {
-    "opening": "gentle",
-    "move": "focused",
-    "capture": "worried",
-    "check": "concerned",
-    "checked": "surprised",
-    "winning": "relieved",
-    "losing": "worried",
-    "mate": "soft",
-    "draw": "relieved"
+    "opening": "",
+    "move": "",
+    "capture": "",
+    "check": "",
+    "checked": "",
+    "winning": "",
+    "losing": "",
+    "mate": "",
+    "draw": ""
   },
   "chessProfile": {
-    "estimatedElo": 1100,
+    "estimatedElo": 1050,
     "skill": {
-      "candidateAwareness": 49,
+      "candidateAwareness": 62,
       "calculation": 45,
-      "evaluationAccuracy": 46,
-      "tacticalAwareness": 43,
-      "threatAwareness": 62,
-      "positionalUnderstanding": 67,
-      "openingKnowledge": 42,
-      "middlegameKnowledge": 56,
-      "endgameKnowledge": 48,
-      "conversion": 47,
+      "evaluationAccuracy": 55,
+      "tacticalAwareness": 42,
+      "threatAwareness": 68,
+      "positionalUnderstanding": 58,
+      "openingKnowledge": 35,
+      "middlegameKnowledge": 48,
+      "endgameKnowledge": 38,
+      "conversion": 40,
       "defensiveAccuracy": 58,
-      "practicalConsistency": 57,
-      "timeManagement": 64
+      "practicalConsistency": 54,
+      "timeManagement": 50
     },
     "style": {
       "aggression": 18,
-      "riskTolerance": 31,
-      "initiative": 36,
+      "riskTolerance": 22,
+      "initiative": 42,
       "complication": 28,
-      "simplification": 70,
-      "positionalPreference": 78,
-      "defensivePreference": 82,
-      "materialPreference": 68,
-      "sacrificePreference": 20,
-      "kingSafety": 86,
-      "developmentPreference": 72,
-      "pieceActivity": 58,
-      "pawnPlay": 45,
+      "simplification": 72,
+      "positionalPreference": 66,
+      "defensivePreference": 78,
+      "materialPreference": 62,
+      "sacrificePreference": 12,
+      "kingSafety": 82,
+      "developmentPreference": 58,
+      "pieceActivity": 48,
+      "pawnPlay": 44,
       "queenActivity": 24,
-      "endgamePreference": 68,
-      "novelty": 62
+      "endgamePreference": 56,
+      "novelty": 38
     },
     "decision": {
-      "bestMoveDiscipline": 48,
-      "scoreTolerance": 34,
-      "intuitionReliance": 88,
-      "planCommitment": 66,
-      "planFlexibility": 84,
-      "confidence": 54,
-      "composure": 80,
-      "adaptability": 82,
-      "impulsiveness": 32,
-      "overthinking": 44
+      "bestMoveDiscipline": 58,
+      "scoreTolerance": 24,
+      "intuitionReliance": 78,
+      "planCommitment": 45,
+      "planFlexibility": 74,
+      "confidence": 42,
+      "composure": 62,
+      "adaptability": 76,
+      "impulsiveness": 30,
+      "overthinking": 58
     }
   }
 }
