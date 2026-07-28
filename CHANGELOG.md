@@ -294,3 +294,15 @@ Changes:
 - Kept authored opening lines and `freeformWeight` unchanged.
 - Added explicit Stockfish failure handling; there is no legacy-engine fallback.
 - Updated diagnostics to identify Stockfish depth, MultiPV, objective scores, character adjustments, and final selection.
+
+
+## Phase 13.3 — Gameplay-only character chess profiles
+
+- Replaced `personalityProfile` with the gameplay-only `chessProfile` schema.
+- Removed the former personality, aptitude, behavior, and decision compatibility structures.
+- Added strict validation for every supported skill, style, and decision field; unknown fields now fail loading.
+- Wired all retained fields into Stockfish budget, perceived evaluation, bounded style scoring, planning memory, selection tolerance, or consistency.
+- Rebalanced Jace, Juno, Tyler, Hikari, Daika, and Damian into distinct skill and style profiles.
+- Added phase-sensitive opening, middlegame, and endgame knowledge.
+- Added diagnostics for perceived score and game phase.
+- Kept Stockfish 18 as the sole chess engine.
