@@ -106,71 +106,12 @@
   "relationships": {},
   "openingProfile": {
     "white": {
-      "freeformWeight": 80,
-      "lines": [
-        {
-          "name": "Italian Game",
-          "weight": 45,
-          "moves": [
-            "e4",
-            "e5",
-            "Nf3",
-            "Nc6",
-            "Bc4"
-          ]
-        },
-        {
-          "name": "Queen's Pawn Game",
-          "weight": 35,
-          "moves": [
-            "d4",
-            "d5",
-            "Nf3"
-          ]
-        },
-        {
-          "name": "London System",
-          "weight": 20,
-          "moves": [
-            "d4",
-            "d5",
-            "Bf4"
-          ]
-        }
-      ]
+      "freeformWeight": 100,
+      "lines": []
     },
     "black": {
-      "freeformWeight": 80,
-      "lines": [
-        {
-          "name": "King's Pawn Game",
-          "weight": 45,
-          "moves": [
-            "e4",
-            "e5",
-            "Nf3",
-            "Nc6"
-          ]
-        },
-        {
-          "name": "Queen's Pawn Game",
-          "weight": 35,
-          "moves": [
-            "d4",
-            "d5",
-            "Nf3",
-            "Nf6"
-          ]
-        },
-        {
-          "name": "Scandinavian Defense",
-          "weight": 20,
-          "moves": [
-            "e4",
-            "d5"
-          ]
-        }
-      ]
+      "freeformWeight": 100,
+      "lines": []
     }
   },
   "defaultExpression": "",
@@ -231,6 +172,14 @@
       "adaptability": 62,
       "impulsiveness": 46,
       "overthinking": 68
+    },
+    "piecePreferences": {
+      "pawn": 40,
+      "knight": 95,
+      "bishop": 40,
+      "rook": 45,
+      "queen": 25,
+      "king": 55
     }
   }
 }

@@ -234,6 +234,14 @@
       "adaptability": 86,
       "impulsiveness": 77,
       "overthinking": 72
+    },
+    "piecePreferences": {
+      "pawn": 74,
+      "knight": 50,
+      "bishop": 50,
+      "rook": 50,
+      "queen": 88,
+      "king": 38
     }
   }
 }
