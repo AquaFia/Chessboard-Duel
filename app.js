@@ -41,6 +41,7 @@ function validateCharacter(character,file){
  const requiredSkill=["candidateAwareness","calculation","evaluationAccuracy","tacticalAwareness","threatAwareness","positionalUnderstanding","openingKnowledge","middlegameKnowledge","endgameKnowledge","conversion","defensiveAccuracy","practicalConsistency","timeManagement"];
  const requiredStyle=["aggression","riskTolerance","initiative","complication","simplification","positionalPreference","defensivePreference","materialPreference","sacrificePreference","kingSafety","developmentPreference","pieceActivity","pawnPlay","queenActivity","endgamePreference","novelty"];
  const requiredDecision=["bestMoveDiscipline","scoreTolerance","intuitionReliance","planCommitment","planFlexibility","confidence","composure","adaptability","impulsiveness","overthinking"];
+ const requiredPiecePreferences=["pawn","knight","bishop","rook","queen","king"];
  if(!character.id)throw new Error(`${file} is missing id.`);
  if(!character.dialogue)throw new Error(`${character.id} is missing dialogue.`);
  if(!character.chessProfile)throw new Error(`${character.id} is missing chessProfile.`);
@@ -55,7 +56,7 @@ function validateCharacter(character,file){
   if(unknown.length)throw new Error(`${character.id} chessProfile.${name} has unsupported fields: ${unknown.join(", ")}.`);
   for(const key of keys){const value=section[key];if(!Number.isFinite(value)||value<0||value>100)throw new Error(`${character.id} chessProfile.${name}.${key} must be between 0 and 100.`);}
  };
- validateSection("skill",requiredSkill);validateSection("style",requiredStyle);validateSection("decision",requiredDecision);
+ validateSection("skill",requiredSkill);validateSection("style",requiredStyle);validateSection("decision",requiredDecision);validateSection("piecePreferences",requiredPiecePreferences);
  if(character.relationships){
   for(const [opponentId,events] of Object.entries(character.relationships)){
    if(!events||typeof events!=="object"||Array.isArray(events))throw new Error(`${character.id} relationship with ${opponentId} must be an event object.`);
@@ -178,12 +179,13 @@ function profileValue(section,key,fallback=50){
  return Number.isFinite(raw)?Math.max(0,Math.min(100,raw))/100:fallback/100;
 }
 function generateBrain(character){
- const profile=character.chessProfile,skill=profile.skill,style=profile.style,decision=profile.decision;
+ const profile=character.chessProfile,skill=profile.skill,style=profile.style,decision=profile.decision,piecePreferences=profile.piecePreferences;
  return {
   estimatedElo:profile.estimatedElo,
   skill:Object.fromEntries(Object.keys(skill).map(key=>[key,profileValue(skill,key)])),
   style:Object.fromEntries(Object.keys(style).map(key=>[key,profileValue(style,key)])),
-  decision:Object.fromEntries(Object.keys(decision).map(key=>[key,profileValue(decision,key)]))
+  decision:Object.fromEntries(Object.keys(decision).map(key=>[key,profileValue(decision,key)])),
+  piecePreferences:Object.fromEntries(Object.keys(piecePreferences).map(key=>[key,profileValue(piecePreferences,key)]))
  };
 }
 
@@ -277,10 +279,14 @@ function gamePhase(){
 function analysisBudget(character){
  const b=brainFor(character),s=b.skill,d=b.decision,elo=b.estimatedElo;
  const phase=gamePhase(),knowledge=s[`${phase}Knowledge`];
- const baseDepth=8+(elo-700)/180;
- const critical=game.inCheck()?2:0;
- const depth=Math.max(7,Math.min(21,Math.round(baseDepth+(s.calculation-.5)*5+(knowledge-.5)*3+(s.timeManagement-.5)*2+(d.overthinking-.5)*2+critical)));
- const multipv=Math.max(3,Math.min(10,Math.round(3+s.candidateAwareness*5+s.evaluationAccuracy*2-d.impulsiveness*2)));
+ const strength=Math.max(0,Math.min(1,(elo-400)/1900));
+ const critical=game.inCheck()?1:0;
+ const depth=Math.max(3,Math.min(21,Math.round(3+strength*12+s.calculation*3+knowledge*2+s.timeManagement+d.overthinking+critical)));
+ // Weak characters need a wider move list so their human-error model can select
+ // genuinely inferior legal moves instead of only choosing among engine favorites.
+ const legalCount=game.moves().length;
+ const weakness=1-strength;
+ const multipv=Math.max(4,Math.min(legalCount,20,Math.round(6+weakness*10+(1-s.candidateAwareness)*4)));
  return {depth,multipv,phase};
 }
 function uciToLegalMove(uci){
@@ -309,7 +315,7 @@ function candidateFeatures(move){
  const activity=centerValue(move.to)-centerValue(move.from);
  return {
   capture:Boolean(move.captured),check:move.san.includes("+"),mate:move.san.includes("#"),castle:move.san.includes("O-O"),
-  queen:move.piece==="q",pawn:move.piece==="p",develops,quiet:!move.captured&&!move.san.includes("+"),
+  piece:move.piece,queen:move.piece==="q",pawn:move.piece==="p",develops,quiet:!move.captured&&!move.san.includes("+"),
   sacrifice:materialGain<0,materialGain,activity,opponentMobility,
   simplifies:afterPieces<beforePieces,endgameTransition:phaseBefore!=="endgame"&&phaseAfter==="endgame",
   plan:classifyMovePlan(move),inCheck
@@ -319,6 +325,8 @@ function characterAdjustment(move,engineScore,character){
  const b=brainFor(character),s=b.style,d=b.decision,k=b.skill,f=candidateFeatures(move),memory=memoryForColor(game.turn());
  let score=0;const notes=[];
  const add=(amount,label)=>{if(Math.abs(amount)>=1){score+=amount;notes.push(`${label} ${amount>0?"+":""}${Math.round(amount)}`);}};
+ const pieceName={p:"pawn",n:"knight",b:"bishop",r:"rook",q:"queen",k:"king"}[f.piece];
+ if(pieceName)add(24*(b.piecePreferences[pieceName]-.5),`${pieceName} preference`);
  if(f.check)add(26*(s.aggression-.5)+22*(s.initiative-.5)+12*(k.tacticalAwareness-.5),"attack");
  if(f.capture)add(16*(s.materialPreference-.5)+10*(k.tacticalAwareness-.5),"material");
  if(f.sacrifice)add(38*(s.sacrificePreference-.5)+24*(s.riskTolerance-.5)+18*(s.complication-.5),"sacrifice");
@@ -412,6 +420,61 @@ function openingMove(character){
  return legal;
 }
 
+function mistakeProbabilities(brain,bestCandidate){
+ const eloWeakness=Math.max(0,Math.min(1,(1500-brain.estimatedElo)/1100));
+ const consistencyWeakness=1-brain.skill.practicalConsistency;
+ const awarenessWeakness=1-((brain.skill.tacticalAwareness+brain.skill.threatAwareness)/2);
+ const pressure=game.inCheck()?(1-brain.decision.composure)*.12:0;
+ const tacticalDemand=(bestCandidate?.style.features.mate||bestCandidate?.style.features.check||bestCandidate?.style.features.capture)?awarenessWeakness*.10:0;
+ const blunder=Math.max(0,Math.min(.34,eloWeakness*.18+consistencyWeakness*.10+awarenessWeakness*.08+pressure+tacticalDemand));
+ const mistake=Math.max(0,Math.min(.45,eloWeakness*.20+consistencyWeakness*.14+(1-brain.skill.evaluationAccuracy)*.08));
+ const inaccuracy=Math.max(0,Math.min(.60,.12+eloWeakness*.24+(1-brain.decision.bestMoveDiscipline)*.12));
+ return {blunder,mistake,inaccuracy};
+}
+function noticedCandidates(candidates,brain){
+ const ordered=[...candidates].sort((a,b)=>b.objective-a.objective);
+ const awareness=brain.skill.candidateAwareness;
+ const minimum=Math.max(2,Math.round(2+awareness*4));
+ const noticed=[];
+ for(const candidate of ordered){
+  const rankFactor=1-candidate.index/Math.max(1,ordered.length-1);
+  const chance=.10+awareness*.62+rankFactor*.24;
+  if(noticed.length<minimum||seedRng()<chance)noticed.push(candidate);
+ }
+ return noticed.length?noticed:ordered.slice(0,minimum);
+}
+function candidatesByLoss(candidates,bestObjective,minLoss,maxLoss=Infinity){
+ return candidates.filter(item=>{
+  if(Math.abs(item.objective)>90000)return false;
+  const loss=bestObjective-item.objective;
+  return loss>=minLoss&&loss<maxLoss;
+ });
+}
+function selectHumanMove(candidates,character,budget){
+ const brain=brainFor(character);
+ const objectiveOrder=[...candidates].sort((a,b)=>b.objective-a.objective);
+ const best=objectiveOrder[0];
+ const bestObjective=best.objective;
+ const noticed=noticedCandidates(objectiveOrder,brain);
+ const probabilities=mistakeProbabilities(brain,best);
+ const roll=seedRng();
+ let tier="sound",pool=[];
+ if(roll<probabilities.blunder){tier="blunder";pool=candidatesByLoss(noticed,bestObjective,300);}
+ else if(roll<probabilities.blunder+probabilities.mistake){tier="mistake";pool=candidatesByLoss(noticed,bestObjective,120,300);}
+ else if(roll<probabilities.blunder+probabilities.mistake+probabilities.inaccuracy){tier="inaccuracy";pool=candidatesByLoss(noticed,bestObjective,35,120);}
+ if(!pool.length){
+  const eloTolerance=Math.max(20,Math.min(260,(1700-brain.estimatedElo)/5));
+  const tolerance=Math.round(eloTolerance+brain.decision.scoreTolerance*90+(1-brain.decision.bestMoveDiscipline)*80);
+  pool=noticed.filter(item=>bestObjective-item.objective<=tolerance);
+  tier="sound";
+ }
+ if(!pool.length)pool=noticed;
+ pool.sort((a,b)=>b.total-a.total);
+ const choiceWindow=Math.max(1,Math.min(pool.length,Math.round(1+(1-brain.skill.practicalConsistency)*3)));
+ const chosen=pool[Math.floor(seedRng()*choiceWindow)]||pool[0]||best;
+ return {chosen,best,bestObjective,noticed,tier,probabilities};
+}
+
 async function chooseMove(character){
  const legal=game.moves({verbose:true});if(!legal.length)return null;
  character._usedOpeningMove=false;
@@ -429,20 +492,11 @@ async function chooseMove(character){
   return {move,objective,perceived,style,total:perceived+style.score,depth:entry.depth,mate:entry.mate,pv:entry.pv,index};
  }).filter(Boolean);
  if(!candidates.length)throw new Error("Stockfish returned no legal candidate move.");
- const bestObjective=Math.max(...candidates.map(item=>item.objective));
- const eloBase=Math.max(8,Math.min(150,(1900-brain.estimatedElo)/9));
- const tolerance=Math.round(eloBase+brain.decision.scoreTolerance*85+(1-brain.decision.bestMoveDiscipline)*75+(1-brain.skill.practicalConsistency)*45);
- let eligible=candidates.filter(item=>bestObjective-item.objective<=tolerance);
- if(candidates.some(item=>item.objective>90000))eligible=candidates.filter(item=>item.objective>90000);
- eligible.sort((a,b)=>b.total-a.total);
- let chosen=eligible[0]||candidates[0];
- const lapseChance=Math.max(0,Math.min(.28,(1-brain.skill.practicalConsistency)*.18+(1-brain.decision.composure)*.08+brain.decision.impulsiveness*.05-(brain.estimatedElo-900)/9000));
- if(eligible.length>1&&seedRng()<lapseChance){
-  const pool=eligible.slice(0,Math.min(4,eligible.length));
-  chosen=pool[Math.min(pool.length-1,1+Math.floor(seedRng()*(pool.length-1)))];
- }
+ const selection=selectHumanMove(candidates,character,budget);
+ const chosen=selection.chosen;
+ const chosenLoss=Math.max(0,selection.bestObjective-chosen.objective);
  character._intent=chosen.style.features.plan;
- character._cognitiveTrace={source:"Stockfish 18 + chessProfile",chosen:chosen.move.san,objectiveBest:candidates.sort((a,b)=>b.objective-a.objective)[0].move.san,depth:budget.depth,multipv:budget.multipv,phase:budget.phase,tolerance,candidates:candidates.sort((a,b)=>b.objective-a.objective).map(item=>({san:item.move.san,objective:item.objective,perceived:Math.round(item.perceived),character:item.style.score,total:item.total,notes:item.style.notes}))};
+ character._cognitiveTrace={source:"Stockfish 18 + human error model",chosen:chosen.move.san,objectiveBest:selection.best.move.san,depth:budget.depth,multipv:budget.multipv,phase:budget.phase,mistakeTier:selection.tier,chosenLoss,noticedCount:selection.noticed.length,probabilities:selection.probabilities,candidates:[...candidates].sort((a,b)=>b.objective-a.objective).map(item=>({san:item.move.san,objective:item.objective,perceived:Math.round(item.perceived),character:item.style.score,total:item.total,noticed:selection.noticed.includes(item),notes:item.style.notes}))};
  renderDiagnostics(character);return chosen.move;
 }
 
@@ -454,9 +508,10 @@ function renderDiagnostics(character){
   <div class="diagnostic-grid">
    <div><span>Engine</span><strong>${trace.source}</strong></div><div><span>Depth</span><strong>${trace.depth}</strong></div>
    <div><span>MultiPV</span><strong>${trace.multipv}</strong></div><div><span>Phase</span><strong>${trace.phase}</strong></div><div><span>Chosen</span><strong>${trace.chosen}</strong></div>
-   <div><span>Objective best</span><strong>${trace.objectiveBest}</strong></div><div><span>Style tolerance</span><strong>${trace.tolerance} cp</strong></div>
+   <div><span>Objective best</span><strong>${trace.objectiveBest}</strong></div><div><span>Decision</span><strong>${trace.mistakeTier}</strong></div>
+   <div><span>Move loss</span><strong>${Math.round(trace.chosenLoss)} cp</strong></div><div><span>Moves noticed</span><strong>${trace.noticedCount}</strong></div>
   </div>
-  <div class="candidate-list">${trace.candidates.map((item,index)=>`<div><span>${index+1}. ${item.san}${item.notes.length?` · ${item.notes.join(", ")}`:""}</span><span>SF ${item.objective} · perceived ${item.perceived} · style ${item.character>=0?"+":""}${Math.round(item.character)} · total ${Math.round(item.total)}</span></div>`).join("")}</div>`;
+  <div class="candidate-list">${trace.candidates.map((item,index)=>`<div><span>${index+1}. ${item.san}${item.noticed?"":" · unseen"}${item.notes.length?` · ${item.notes.join(", ")}`:""}</span><span>SF ${item.objective} · perceived ${item.perceived} · style ${item.character>=0?"+":""}${Math.round(item.character)} · total ${Math.round(item.total)}</span></div>`).join("")}</div>`;
 }
 function moveEvent(move){
  if(game.isCheckmate())return "mate";

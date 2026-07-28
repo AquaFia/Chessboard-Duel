@@ -1,25 +1,39 @@
-# Chess Profile Runtime Contract
+# Chess Profile Runtime Schema
 
-The character JSON contains only chess values that alter gameplay.
+Every character must include a `chessProfile` object with these required sections:
 
-## Selection pipeline
+- `estimatedElo`
+- `skill`
+- `style`
+- `decision`
+- `piecePreferences`
 
-1. An authored opening line may provide the move.
-2. Stockfish 18 analyzes the position with MultiPV.
-3. `skill` determines the analysis budget and how accurately candidates are perceived.
-4. `style` assigns bounded preferences to viable candidates.
-5. `decision` determines objective-loss tolerance, plan continuity, consistency, and lapses.
-6. Mate candidates and stale-position safeguards remain authoritative.
+All score values are numbers from 0 through 100. The game rejects missing, unknown, or out-of-range fields.
 
-## Sections
+## Piece preferences
 
-### `skill`
-`candidateAwareness`, `calculation`, `evaluationAccuracy`, `tacticalAwareness`, `threatAwareness`, `positionalUnderstanding`, `openingKnowledge`, `middlegameKnowledge`, `endgameKnowledge`, `conversion`, `defensiveAccuracy`, `practicalConsistency`, `timeManagement`.
+```json
+"piecePreferences": {
+  "pawn": 50,
+  "knight": 50,
+  "bishop": 50,
+  "rook": 50,
+  "queen": 50,
+  "king": 50
+}
+```
 
-### `style`
-`aggression`, `riskTolerance`, `initiative`, `complication`, `simplification`, `positionalPreference`, `defensivePreference`, `materialPreference`, `sacrificePreference`, `kingSafety`, `developmentPreference`, `pieceActivity`, `pawnPlay`, `queenActivity`, `endgamePreference`, `novelty`.
+These are runtime move-selection weights, not biography or display metadata. A value above 50 rewards moves made by that piece; a value below 50 discourages them. The adjustment is deliberately limited so it breaks close decisions without replacing objective evaluation or the human-error model.
 
-### `decision`
-`bestMoveDiscipline`, `scoreTolerance`, `intuitionReliance`, `planCommitment`, `planFlexibility`, `confidence`, `composure`, `adaptability`, `impulsiveness`, `overthinking`.
+## Human-error behavior
 
-All values are required and must be numbers from 0 through 100. Unknown fields are rejected so obsolete JSON cannot silently remain.
+The runtime derives analysis depth, candidate breadth, noticed moves, and error probability from the profile. Low-rated characters can fail to notice good moves and may select inaccuracies, mistakes, or blunders. High-rated characters use deeper searches, notice more candidates, and make fewer severe errors.
+
+Characters explicitly described as not knowing chess should use no prepared opening lines:
+
+```json
+"openingProfile": {
+  "white": { "freeformWeight": 100, "lines": [] },
+  "black": { "freeformWeight": 100, "lines": [] }
+}
+```

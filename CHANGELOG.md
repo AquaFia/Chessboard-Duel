@@ -306,3 +306,16 @@ Changes:
 - Added phase-sensitive opening, middlegame, and endgame knowledge.
 - Added diagnostics for perceived score and game phase.
 - Kept Stockfish 18 as the sole chess engine.
+
+## Phase 14 — Human Chess and Piece Preferences
+
+- Added required runtime `chessProfile.piecePreferences` values for pawn, knight, bishop, rook, queen, and king activity bias.
+- Piece preferences now directly affect candidate move scoring and are shown in diagnostics.
+- Replaced the minimum depth-7 weak-bot floor with an Elo-scaled depth range beginning at depth 3.
+- Expanded weak-bot MultiPV analysis so low-rated characters can consider genuinely inferior legal moves.
+- Added candidate awareness filtering: characters no longer automatically notice every analyzed move.
+- Added Elo- and profile-driven inaccuracy, mistake, and blunder selection bands.
+- Diagnostics now report decision tier, centipawn loss, and how many moves the character noticed.
+- Removed Adair's opening book because his profile explicitly says he does not know chess.
+- Recalibrated Daika from 1050 to 750 Elo and removed her opening book so she behaves as an intentionally easy opponent.
+- Kept Adair's high knight preference as a live move-selection weight.
