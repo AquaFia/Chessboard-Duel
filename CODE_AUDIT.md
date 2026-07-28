@@ -1,38 +1,10 @@
-# Phase 13.2 Code Audit
+# Phase 13.3 Code and Data Audit
 
-## White-side winning bug
-
-The Stockfish score was being negated whenever Black was to move:
-
-```js
-const objective = side === "w" ? entry.score : -entry.score;
-```
-
-Stockfish UCI analysis scores are already expressed from the current side-to-move perspective. Negating Black's score reversed Black's candidate rankings, causing Black to prefer objectively worse moves. The corrected code uses:
-
-```js
-const objective = entry.score;
-```
-
-## Dead-code audit
-
-The runtime was checked for:
-
-- unreferenced named functions
-- single-use declarations that were never consumed
-- duplicate Stockfish search entry points
-- alternate/custom chess search or evaluation engines
-- legacy minimax, alpha-beta, and custom legal-move selection paths
-- direct `go` calls outside `StockfishManager`
-
-Results:
-
-- No unreferenced named functions were found.
-- No unused top-level declarations were found.
-- `StockfishManager` remains the sole Stockfish search gateway.
-- No homemade chess engine, minimax, alpha-beta, or fallback move engine is present.
-- `chess.js` remains responsible only for board state, legality, history, and game-over rules.
-
-## Character profile note
-
-Several character JSON fields are loaded but do not yet meaningfully affect move selection. Those are data/schema issues reserved for the next character-profile wiring and rebalance phase. They were not silently deleted in this engine-correction phase.
+- All 64 named runtime functions are referenced.
+- Every roster JSON file parses successfully and matches the exact `chessProfile` schema.
+- Unknown chess fields are rejected at load time.
+- The obsolete `personalityProfile`, aptitude, behavior-model, and old decision-model structures are absent from active character data and runtime code.
+- Every retained chess field is consumed by analysis budgeting, candidate perception, bounded style scoring, planning memory, move selection, or gameplay consistency.
+- Stockfish remains the only chess analysis engine.
+- No minimax, alpha-beta search, homemade evaluator, or fallback move engine is present.
+- `chess.js` remains responsible only for legal moves, board state, history, and game-ending rules.

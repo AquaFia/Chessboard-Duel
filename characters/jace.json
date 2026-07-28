@@ -190,77 +190,52 @@
     "mate": "excited",
     "draw": "curious"
   },
-  "personalityProfile": {
+  "chessProfile": {
     "estimatedElo": 1250,
-    "corePersonality": {
-      "aggression": 42,
-      "riskTolerance": 88,
-      "patience": 46,
-      "creativity": 82,
-      "curiosity": 100,
-      "confidence": 76,
-      "emotionalStability": 74,
-      "adaptability": 78,
-      "persistence": 84,
-      "discipline": 48,
-      "bluffing": 31,
-      "empathy": 45,
-      "competitiveness": 58,
-      "caution": 22,
-      "independence": 86,
-      "leadership": 38,
-      "impulsiveness": 87,
-      "humor": 72
-    },
-    "chessAptitude": {
-      "patternRecognition": 98,
-      "strategicPlanning": 66,
-      "tacticalVision": 91,
-      "calculationPotential": 88,
-      "memory": 92,
-      "spatialReasoning": 79,
-      "longTermPlanning": 55,
-      "intuition": 83,
-      "learningSpeed": 95,
-      "focus": 68,
-      "composureUnderPressure": 76,
-      "adaptationDuringGames": 84
-    },
-    "currentChessSkill": {
-      "candidateAwareness": 50,
-      "threatDetection": 50,
-      "tacticalVision": 50,
-      "calculation": 50,
-      "evaluationAccuracy": 50,
-      "patternRecognition": 50,
-      "planning": 50,
+    "skill": {
+      "candidateAwareness": 58,
+      "calculation": 55,
+      "evaluationAccuracy": 57,
+      "tacticalAwareness": 63,
+      "threatAwareness": 54,
+      "positionalUnderstanding": 50,
       "openingKnowledge": 38,
       "middlegameKnowledge": 67,
       "endgameKnowledge": 42,
-      "conversion": 50,
-      "practicalAccuracy": 61,
-      "timeManagement": 49
+      "conversion": 52,
+      "defensiveAccuracy": 47,
+      "practicalConsistency": 61,
+      "timeManagement": 55
     },
-    "behaviorModel": {
-      "captureConfidence": 50,
-      "simplificationPreference": 50,
-      "complicationPreference": 50,
-      "initiativePreference": 50,
-      "defensivePreference": 50,
-      "materialGreed": 50,
-      "sacrificeWillingness": 50,
-      "queenActivity": 50,
-      "pieceProtection": 50,
-      "developmentPriority": 50
+    "style": {
+      "aggression": 42,
+      "riskTolerance": 88,
+      "initiative": 72,
+      "complication": 82,
+      "simplification": 28,
+      "positionalPreference": 45,
+      "defensivePreference": 32,
+      "materialPreference": 35,
+      "sacrificePreference": 76,
+      "kingSafety": 42,
+      "developmentPreference": 54,
+      "pieceActivity": 72,
+      "pawnPlay": 66,
+      "queenActivity": 78,
+      "endgamePreference": 22,
+      "novelty": 90
     },
-    "decisionModel": {
-      "intuitionReliance": 50,
-      "calculationReliance": 50,
-      "planCommitment": 50,
-      "planFlexibility": 50,
-      "psychologicalPlay": 50,
-      "moveSpeed": 50,
-      "overthinking": 50
+    "decision": {
+      "bestMoveDiscipline": 38,
+      "scoreTolerance": 82,
+      "intuitionReliance": 76,
+      "planCommitment": 48,
+      "planFlexibility": 78,
+      "confidence": 76,
+      "composure": 74,
+      "adaptability": 78,
+      "impulsiveness": 87,
+      "overthinking": 62
     }
   }
 }

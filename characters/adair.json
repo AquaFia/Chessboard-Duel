@@ -1,0 +1,236 @@
+{
+  "id": "adair",
+  "name": "Adair Nexus",
+  "shortName": "Adair",
+  "talent": "Ultimate Meteorologist",
+  "theme": {
+    "primary": "#D6A21E",
+    "secondary": "#4F8A4A",
+    "panel": "#3A2A1D"
+  },
+  "portraits": {},
+  "fallbackPortrait": {
+    "hairTop": "#8B5A2B",
+    "hairBottom": "#5C351A",
+    "skin": "#D8A77A",
+    "shirt": "#6B4A2E",
+    "eyes": "#D6A21E",
+    "accessory": "#6FAF6A"
+  },
+  "dialogue": {
+    "opening": [
+      "I should probably mention I don’t really know how to play.",
+      "Okay… I’ll try to keep track of the pieces, at least.",
+      "This might go badly, but I’ll do my best.",
+      "If I ask too many questions, sorry in advance."
+    ],
+    "move": [
+      "Um… this seems safe enough.",
+      "I think this is allowed.",
+      "Let’s move there and see what changes.",
+      "One step at a time."
+    ],
+    "capture": [
+      "Oh—sorry. I think I can take that.",
+      "That was probably important, wasn’t it?",
+      "I didn’t mean for that to look aggressive.",
+      "Okay, that piece was in range."
+    ],
+    "check": [
+      "Is that check? I think that’s check.",
+      "Your king might need an umbrella.",
+      "I noticed that line just in time.",
+      "That looks like pressure, right?"
+    ],
+    "checked": [
+      "Ah. That’s bad, isn’t it?",
+      "Okay, forecast changed. Very suddenly.",
+      "I should have seen that coming.",
+      "Right, the king matters a lot. I knew that."
+    ],
+    "winning": [
+      "I’m ahead? Are you sure?",
+      "That feels… unexpectedly clear.",
+      "I don’t want to get careless now.",
+      "Maybe the weather is finally turning."
+    ],
+    "losing": [
+      "That position looks stormy.",
+      "I may have missed several things.",
+      "Okay, don’t panic. Find shelter first.",
+      "This is why I warned you I was new."
+    ],
+    "mate": [
+      "Wait… that’s checkmate?",
+      "I won? Oh. I mean—good game.",
+      "The pattern finally made sense.",
+      "I’m honestly more surprised than proud."
+    ],
+    "draw": [
+      "A draw sounds fair to me.",
+      "No one got washed away. I’ll take that.",
+      "That was tense, but peaceful enough.",
+      "Maybe we both predicted enough of it."
+    ],
+    "opponentRepeating": [
+      "You’re circling the same clouds again.",
+      "I think I’ve seen this pattern before.",
+      "Is repeating moves a strategy? It might be.",
+      "The pressure isn’t changing much."
+    ],
+    "underPressure": [
+      "Too many things are happening at once.",
+      "Okay, breathe. Check the threats first.",
+      "This feels like watching storm fronts collide.",
+      "I need a plan before I move anything else."
+    ],
+    "openingDeviation": [
+      "That wasn’t what I expected… not that I expected much.",
+      "I don’t know openings, so maybe this is normal?",
+      "The forecast changed already.",
+      "I’ll stop pretending there was a prepared line."
+    ],
+    "failedPlan": [
+      "Oh. That doesn’t work anymore.",
+      "I think my plan had a hole in it.",
+      "Right, pieces can move after I plan things.",
+      "That was less stable than I thought."
+    ],
+    "retaliation": [
+      "Okay, then I should answer that somehow.",
+      "If you’re attacking there, I need to adjust.",
+      "Let me see what changed.",
+      "That move has consequences. Probably for both of us."
+    ]
+  },
+  "relationships": {},
+  "openingProfile": {
+    "white": {
+      "freeformWeight": 80,
+      "lines": [
+        {
+          "name": "Italian Game",
+          "weight": 45,
+          "moves": [
+            "e4",
+            "e5",
+            "Nf3",
+            "Nc6",
+            "Bc4"
+          ]
+        },
+        {
+          "name": "Queen's Pawn Game",
+          "weight": 35,
+          "moves": [
+            "d4",
+            "d5",
+            "Nf3"
+          ]
+        },
+        {
+          "name": "London System",
+          "weight": 20,
+          "moves": [
+            "d4",
+            "d5",
+            "Bf4"
+          ]
+        }
+      ]
+    },
+    "black": {
+      "freeformWeight": 80,
+      "lines": [
+        {
+          "name": "King's Pawn Game",
+          "weight": 45,
+          "moves": [
+            "e4",
+            "e5",
+            "Nf3",
+            "Nc6"
+          ]
+        },
+        {
+          "name": "Queen's Pawn Game",
+          "weight": 35,
+          "moves": [
+            "d4",
+            "d5",
+            "Nf3",
+            "Nf6"
+          ]
+        },
+        {
+          "name": "Scandinavian Defense",
+          "weight": 20,
+          "moves": [
+            "e4",
+            "d5"
+          ]
+        }
+      ]
+    }
+  },
+  "defaultExpression": "",
+  "expressionMap": {
+    "opening": "",
+    "move": "",
+    "capture": "",
+    "check": "",
+    "checked": "",
+    "winning": "",
+    "losing": "",
+    "mate": "",
+    "draw": ""
+  },
+  "chessProfile": {
+    "estimatedElo": 650,
+    "skill": {
+      "candidateAwareness": 38,
+      "calculation": 32,
+      "evaluationAccuracy": 30,
+      "tacticalAwareness": 28,
+      "threatAwareness": 45,
+      "positionalUnderstanding": 30,
+      "openingKnowledge": 12,
+      "middlegameKnowledge": 22,
+      "endgameKnowledge": 15,
+      "conversion": 25,
+      "defensiveAccuracy": 32,
+      "practicalConsistency": 36,
+      "timeManagement": 42
+    },
+    "style": {
+      "aggression": 20,
+      "riskTolerance": 25,
+      "initiative": 34,
+      "complication": 22,
+      "simplification": 68,
+      "positionalPreference": 42,
+      "defensivePreference": 70,
+      "materialPreference": 58,
+      "sacrificePreference": 15,
+      "kingSafety": 75,
+      "developmentPreference": 52,
+      "pieceActivity": 42,
+      "pawnPlay": 38,
+      "queenActivity": 25,
+      "endgamePreference": 45,
+      "novelty": 30
+    },
+    "decision": {
+      "bestMoveDiscipline": 42,
+      "scoreTolerance": 28,
+      "intuitionReliance": 62,
+      "planCommitment": 50,
+      "planFlexibility": 58,
+      "confidence": 28,
+      "composure": 55,
+      "adaptability": 62,
+      "impulsiveness": 46,
+      "overthinking": 68
+    }
+  }
+}
