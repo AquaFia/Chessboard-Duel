@@ -1,3 +1,13 @@
+# Phase 16 — Emotional State
+
+- Added a runtime-only emotional state derived from existing character profile values.
+- Confidence, frustration, and focus now change in response to move quality, captures, and checks.
+- Added personality inertia so composed and consistent characters react more slowly.
+- Emotional state now modifies candidate awareness, calculation, tactical vision, consistency, risk, aggression, and move discipline.
+- Added emotional-state information to AI Diagnostics.
+- Added rewind and new-match resets for emotional state.
+- Added no new JSON fields.
+
 # Phase 13.2 — Color Score Fix and Code Audit
 
 - Fixed Black-side Stockfish score inversion.

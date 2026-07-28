@@ -190,6 +190,75 @@ function generateBrain(character){
 }
 
 function brainFor(character){return character._brain||(character._brain=generateBrain(character));}
+function clamp01(value){return Math.max(0,Math.min(1,value));}
+function clamp100(value){return Math.max(0,Math.min(100,value));}
+function createEmotionState(character){
+ const b=brainFor(character),d=b.decision,s=b.skill;
+ const baseline={
+  confidence:clamp100(d.confidence*100),
+  frustration:clamp100((1-d.composure)*18+d.impulsiveness*10),
+  focus:clamp100(((s.candidateAwareness+s.practicalConsistency+d.composure)/3)*100)
+ };
+ const inertia=clamp01(.18+d.composure*.38+s.practicalConsistency*.24+d.planCommitment*.20);
+ return {...baseline,baseline,inertia,lastChange:"Opening baseline"};
+}
+function emotionFor(character){return character._emotion||(character._emotion=createEmotionState(character));}
+function effectiveBrain(character){
+ const base=brainFor(character),e=emotionFor(character);
+ const confidence=(e.confidence-e.baseline.confidence)/100;
+ const frustration=(e.frustration-e.baseline.frustration)/100;
+ const focus=(e.focus-e.baseline.focus)/100;
+ const skill={...base.skill};
+ const style={...base.style};
+ const decision={...base.decision};
+ skill.candidateAwareness=clamp01(skill.candidateAwareness+focus*.34-frustration*.18);
+ skill.tacticalAwareness=clamp01(skill.tacticalAwareness+focus*.27-frustration*.16);
+ skill.threatAwareness=clamp01(skill.threatAwareness+focus*.30-frustration*.20);
+ skill.evaluationAccuracy=clamp01(skill.evaluationAccuracy+focus*.25-frustration*.17);
+ skill.calculation=clamp01(skill.calculation+focus*.24-frustration*.15);
+ skill.practicalConsistency=clamp01(skill.practicalConsistency+focus*.16-frustration*.28);
+ skill.defensiveAccuracy=clamp01(skill.defensiveAccuracy+focus*.16-frustration*.22-confidence*.06);
+ decision.bestMoveDiscipline=clamp01(decision.bestMoveDiscipline+focus*.18-frustration*.24-Math.max(0,confidence)*.14);
+ decision.composure=clamp01(decision.composure-frustration*.32+focus*.08);
+ decision.impulsiveness=clamp01(decision.impulsiveness+frustration*.35+Math.max(0,confidence)*.24);
+ decision.scoreTolerance=clamp01(decision.scoreTolerance+frustration*.24+Math.max(0,confidence)*.16-Math.min(0,confidence)*.10);
+ style.aggression=clamp01(style.aggression+confidence*.22+frustration*.14);
+ style.riskTolerance=clamp01(style.riskTolerance+confidence*.28+frustration*.22);
+ style.complication=clamp01(style.complication+confidence*.18+frustration*.15);
+ style.defensivePreference=clamp01(style.defensivePreference-confidence*.15-frustration*.08);
+ return {...base,skill,style,decision,emotion:e};
+}
+function settleEmotion(character){
+ const e=emotionFor(character),rate=.035+.045*e.inertia;
+ e.confidence+=(e.baseline.confidence-e.confidence)*rate;
+ e.frustration+=(e.baseline.frustration-e.frustration)*rate;
+ e.focus+=(e.baseline.focus-e.focus)*rate;
+}
+function applyEmotionDelta(character,{confidence=0,frustration=0,focus=0,label="Game event"}){
+ const e=emotionFor(character),responsiveness=1.18-e.inertia;
+ e.confidence=clamp100(e.confidence+confidence*responsiveness);
+ e.frustration=clamp100(e.frustration+frustration*responsiveness);
+ e.focus=clamp100(e.focus+focus*responsiveness);
+ e.lastChange=label;
+}
+function updateEmotionsAfterMove(move,actor,opponent){
+ settleEmotion(actor);settleEmotion(opponent);
+ const b=brainFor(actor),ob=brainFor(opponent),trace=actor._cognitiveTrace;
+ const tier=trace?.decisionHistoryLength===game.history().length-1?trace.mistakeTier:null;
+ if(tier==="blunder")applyEmotionDelta(actor,{confidence:-20,frustration:22*(1-b.decision.composure),focus:8*b.decision.adaptability+5*b.decision.overthinking,label:trace.mistakeReason||"Blunder"});
+ else if(tier==="mistake")applyEmotionDelta(actor,{confidence:-11,frustration:13*(1-b.decision.composure),focus:6*b.decision.adaptability+3*b.decision.overthinking,label:trace.mistakeReason||"Mistake"});
+ else if(tier==="inaccuracy")applyEmotionDelta(actor,{confidence:-4,frustration:5*(1-b.decision.composure),focus:3*b.decision.adaptability,label:trace.mistakeReason||"Inaccuracy"});
+ else if(tier==="sound")applyEmotionDelta(actor,{confidence:2.5*b.decision.confidence,frustration:-2*b.decision.composure,focus:1.5*b.skill.practicalConsistency,label:"Sound move"});
+ if(move.captured){
+  const swing=(value[move.captured]||100)/100;
+  applyEmotionDelta(actor,{confidence:Math.min(13,3.5*swing),frustration:-Math.min(8,2*swing),focus:1.5,label:`Won a ${move.captured}`});
+  applyEmotionDelta(opponent,{confidence:-Math.min(12,3.2*swing),frustration:Math.min(14,4*swing)*(1-ob.decision.composure),focus:3*ob.decision.adaptability,label:`Lost a ${move.captured}`});
+ }
+ if(game.inCheck()&&!game.isCheckmate()){
+  applyEmotionDelta(actor,{confidence:3,frustration:-1,focus:2,label:"Applied check"});
+  applyEmotionDelta(opponent,{confidence:-3,frustration:6*(1-ob.decision.composure),focus:5*ob.decision.adaptability+2,label:"Under check"});
+ }
+}
 function freshMemory(){return {lastPiece:null,lastTo:null,repeatedPieceMoves:0,openingDeviation:false,contextualEvent:null,currentPlan:null,planStreak:0};}
 function memoryForColor(color){return matchMemory[color]||(matchMemory[color]=freshMemory());}
 function characterColor(character){return character===config.white?"w":"b";}
@@ -279,7 +348,7 @@ function gamePhase(){
  return "middlegame";
 }
 function analysisBudget(character){
- const b=brainFor(character),s=b.skill,d=b.decision,elo=b.estimatedElo;
+ const b=effectiveBrain(character),s=b.skill,d=b.decision,elo=b.estimatedElo;
  const phase=gamePhase(),knowledge=s[`${phase}Knowledge`];
  const strength=Math.max(0,Math.min(1,(elo-400)/1900));
  const critical=game.inCheck()?1:0;
@@ -324,7 +393,7 @@ function candidateFeatures(move){
  };
 }
 function characterAdjustment(move,engineScore,character){
- const b=brainFor(character),s=b.style,d=b.decision,k=b.skill,f=candidateFeatures(move),memory=memoryForColor(game.turn());
+ const b=effectiveBrain(character),s=b.style,d=b.decision,k=b.skill,f=candidateFeatures(move),memory=memoryForColor(game.turn());
  let score=0;const notes=[];
  const add=(amount,label)=>{if(Math.abs(amount)>=1){score+=amount;notes.push(`${label} ${amount>0?"+":""}${Math.round(amount)}`);}};
  const pieceName={p:"pawn",n:"knight",b:"bishop",r:"rook",q:"queen",k:"king"}[f.piece];
@@ -353,7 +422,7 @@ function characterAdjustment(move,engineScore,character){
  return {score:Math.max(-cap,Math.min(cap,score)),notes,features:f};
 }
 function perceivedObjective(objective,character,index,phase){
- const b=brainFor(character),s=b.skill,d=b.decision;
+ const b=effectiveBrain(character),s=b.skill,d=b.decision;
  if(Math.abs(objective)>90000)return objective;
  const phaseKnowledge=s[`${phase}Knowledge`];
  const eloNoise=Math.max(0,(1900-b.estimatedElo)/12);
@@ -462,7 +531,7 @@ function candidatesByLoss(candidates,bestObjective,minLoss,maxLoss=Infinity){
  });
 }
 function selectHumanMove(candidates,character,budget,trueBest){
- const brain=brainFor(character);
+ const brain=effectiveBrain(character);
  const objectiveOrder=[...candidates].sort((a,b)=>b.objective-a.objective);
  const best=objectiveOrder[0];
  const benchmark=trueBest||best;
@@ -510,9 +579,9 @@ async function chooseMove(character){
  const legal=game.moves({verbose:true});if(!legal.length)return null;
  character._usedOpeningMove=false;
  const bookMove=openingMove(character);
- if(bookMove){character._intent="openingPreparation";character._cognitiveTrace={source:"opening book",chosen:bookMove.san};renderDiagnostics(character);return bookMove;}
+ if(bookMove){character._intent="openingPreparation";character._cognitiveTrace={source:"opening book",chosen:bookMove.san,decisionHistoryLength:game.history().length};renderDiagnostics(character);return bookMove;}
  const budget=analysisBudget(character),analyzedFen=game.fen(),analyzedGeneration=matchGeneration;
- const brain=brainFor(character);
+ const brain=effectiveBrain(character);
  const noticedLegal=noticeLegalMoves(legal,brain);
  const baselineDepth=Math.max(5,Math.min(12,Math.round(5+(brain.estimatedElo-400)/220)));
  const [baselineRaw,raw]=await Promise.all([
@@ -535,14 +604,14 @@ async function chooseMove(character){
  const chosenLoss=Math.max(0,selection.bestObjective-chosen.objective);
  const reason=mistakeReason(chosen,selection.bestObjective);
  character._intent=chosen.style.features.plan;
- character._cognitiveTrace={source:"Stockfish 18 + limited human vision",chosen:chosen.move.san,objectiveBest:selection.best.move.san,depth:budget.depth,multipv:budget.multipv,phase:budget.phase,mistakeTier:selection.tier,mistakeReason:reason,chosenLoss,noticedCount:noticedLegal.length,legalCount:legal.length,probabilities:selection.probabilities,candidates:[...candidates].sort((a,b)=>b.objective-a.objective).map(item=>({san:item.move.san,objective:item.objective,perceived:Math.round(item.perceived),character:item.style.score,total:item.total,noticed:true,notes:item.style.notes}))};
+ character._cognitiveTrace={source:"Stockfish 18 + limited human vision",decisionHistoryLength:game.history().length,chosen:chosen.move.san,objectiveBest:selection.best.move.san,depth:budget.depth,multipv:budget.multipv,phase:budget.phase,mistakeTier:selection.tier,mistakeReason:reason,chosenLoss,noticedCount:noticedLegal.length,legalCount:legal.length,probabilities:selection.probabilities,candidates:[...candidates].sort((a,b)=>b.objective-a.objective).map(item=>({san:item.move.san,objective:item.objective,perceived:Math.round(item.perceived),character:item.style.score,total:item.total,noticed:true,notes:item.style.notes}))};
  renderDiagnostics(character);return chosen.move;
 }
 
 function renderDiagnostics(character){
  const panel=$("#diagnosticsPanel");if(!panel||panel.hidden)return;
  const trace=character?._cognitiveTrace;if(!trace){$("#diagnosticsBody").textContent="No AI decision has been recorded yet.";return;}
- if(trace.source==="opening book"){$("#diagnosticsBody").innerHTML=`<p><b>Source:</b> Character opening book</p><p><b>Chosen move:</b> ${trace.chosen}</p>`;return;}
+ if(trace.source==="opening book"){const e=emotionFor(character);$("#diagnosticsBody").innerHTML=`<p><b>Source:</b> Character opening book</p><p><b>Chosen move:</b> ${trace.chosen}</p><p><b>Emotional state:</b> Confidence ${Math.round(e.confidence)} · Frustration ${Math.round(e.frustration)} · Focus ${Math.round(e.focus)}</p>`;return;}
  $("#diagnosticsBody").innerHTML=`
   <div class="diagnostic-grid">
    <div><span>Engine</span><strong>${trace.source}</strong></div><div><span>Depth</span><strong>${trace.depth}</strong></div>
@@ -550,6 +619,10 @@ function renderDiagnostics(character){
    <div><span>Objective best</span><strong>${trace.objectiveBest}</strong></div><div><span>Decision</span><strong>${trace.mistakeTier}</strong></div>
    <div><span>Reason</span><strong>${trace.mistakeReason}</strong></div><div><span>Move loss</span><strong>${Math.round(trace.chosenLoss)} cp</strong></div>
    <div><span>Moves noticed</span><strong>${trace.noticedCount} / ${trace.legalCount}</strong></div>
+   <div><span>Confidence</span><strong>${Math.round(emotionFor(character).confidence)}</strong></div>
+   <div><span>Frustration</span><strong>${Math.round(emotionFor(character).frustration)}</strong></div>
+   <div><span>Focus</span><strong>${Math.round(emotionFor(character).focus)}</strong></div>
+   <div><span>Emotional trigger</span><strong>${emotionFor(character).lastChange}</strong></div>
   </div>
   <div class="candidate-list">${trace.candidates.map((item,index)=>`<div><span>${index+1}. ${item.san}${item.noticed?"":" · unseen"}${item.notes.length?` · ${item.notes.join(", ")}`:""}</span><span>SF ${item.objective} · perceived ${item.perceived} · style ${item.character>=0?"+":""}${Math.round(item.character)} · total ${Math.round(item.total)}</span></div>`).join("")}</div>`;
 }
@@ -565,7 +638,7 @@ function moveEvent(move){
  return "move";
 }
 function moodFor(c,event){
- const b=brainFor(c),s=b.style,d=b.decision;
+ const b=brainFor(c),s=b.style,d=b.decision,e=emotionFor(c);
  if(event==="mate")return "triumphant";
  if(event==="draw")return s.aggression>.65?"frustrated":"calm";
  if(event==="losing")return d.composure<.55?"frustrated":"focused";
@@ -573,6 +646,9 @@ function moodFor(c,event){
  if(event==="check")return s.initiative>.65?"confident":"excited";
  if(event==="capture")return s.novelty>.7?"excited":"confident";
  if(event==="opening")return s.novelty>.65?"curious":"focused";
+ if(e.frustration>=68)return "frustrated";
+ if(e.confidence>=78)return "confident";
+ if(e.focus>=72)return "focused";
  if(s.novelty>.8)return "curious";
  if(s.initiative>.78)return "confident";
  return "focused";
@@ -627,6 +703,8 @@ function afterMove(move,autoContinue=true){
  const side=move.color==="w"?"left":"right";
  const opponentSide=side==="left"?"right":"left";
  const event=moveEvent(move);
+ updateEmotionsAfterMove(move,actor,opponent);
+ renderDiagnostics(actor);
  const mood=moodFor(actor,event);
  const opponentMood=reactionMood(move,opponent);
 
@@ -735,6 +813,9 @@ async function playNextAiMove(){
 function rebuildMatchMemory(){
  const history=game.history({verbose:true});
  matchMemory={w:freshMemory(),b:freshMemory()};
+ delete config.white._emotion;delete config.black._emotion;
+ delete config.white._cognitiveTrace;delete config.black._cognitiveTrace;
+ emotionFor(config.white);emotionFor(config.black);
  const replay=new Chess();
  for(const recorded of history){
   const before=[...replay.board()].flat().reduce((sum,p)=>sum+(p?(p.color==="w"?1:-1)*value[p.type]:0),0);
@@ -743,6 +824,9 @@ function rebuildMatchMemory(){
   const liveGame=game;
   game=replay;
   updateMatchMemory(made,before,after);
+  const actor=made.color==="w"?config.white:config.black;
+  const opponent=made.color==="w"?config.black:config.white;
+  updateEmotionsAfterMove(made,actor,opponent);
   game=liveGame;
  }
 }
@@ -964,6 +1048,7 @@ function startGame(){
  catalog.forEach(character=>{
   delete character._brain;
   delete character._mood;
+  delete character._emotion;
   delete character._openingName;
   delete character._usedOpeningMove;
   delete character._cognitiveTrace;
@@ -977,6 +1062,7 @@ function startGame(){
  document.documentElement.style.setProperty("--right",config.black.theme.primary);document.documentElement.style.setProperty("--right2",config.black.theme.secondary);
  seedRng=$("#seed").value.trim()?seeded($("#seed").value.trim()):Math.random;
  game=new Chess();selected=null;$("#moves").innerHTML="";$("#statusDetail").textContent="Match initialized";
+ emotionFor(config.white);emotionFor(config.black);
  config.white._mood=moodFor(config.white,"opening");
  config.black._mood=moodFor(config.black,"opening");
  setCharacter("left",config.white,expressionForMood(config.white,config.white._mood,"opening"));
