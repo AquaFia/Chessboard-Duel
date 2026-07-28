@@ -398,10 +398,11 @@ async function chooseMove(character){
  const analyzedGeneration=matchGeneration;
  const raw=await stockfish.analyze(analyzedFen,budget);
  if(analyzedGeneration!==matchGeneration||game.fen()!==analyzedFen)return null;
- const side=game.turn();
  const candidates=raw.map(entry=>{
   const move=uciToLegalMove(entry.pv[0]);if(!move)return null;
-  const objective=side==="w"?entry.score:-entry.score;
+  // UCI scores are already reported from the side-to-move perspective.
+  // Negating Black's score made Black prefer Stockfish's worst candidates.
+  const objective=entry.score;
   const style=characterAdjustment(move,objective,character);
   return {move,objective,style,total:objective+style.score,depth:entry.depth,mate:entry.mate,pv:entry.pv};
  }).filter(Boolean);
