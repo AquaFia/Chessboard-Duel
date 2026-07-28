@@ -266,3 +266,7 @@ When Stockfish cannot load or analyze, the game pauses and displays an explicit 
 ## Phase 13.2 correction
 
 Black no longer has its Stockfish evaluations inverted. See `CODE_AUDIT.md`.
+
+## Phase 15 behavior
+
+Weak characters now operate with limited legal-move awareness rather than choosing only among Stockfish's globally preferred candidates. Diagnostics identify the visible consequence of an error where possible. AI move requests are guarded so a request can commit exactly one move.

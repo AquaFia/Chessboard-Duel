@@ -241,7 +241,7 @@ class StockfishManager{
    pending.resolve([...pending.lines.values()].sort((a,b)=>a.multipv-b.multipv));
   }
  }
- analyze(fen,{depth,multipv}){
+ analyze(fen,{depth,multipv,searchmoves=[]}){
   const task=async()=>{
    await this.ready();
    if(this.pending)throw new Error("Stockfish manager entered an invalid busy state.");
@@ -250,7 +250,8 @@ class StockfishManager{
    this.send(`position fen ${fen}`);
    return new Promise((resolve,reject)=>{
     this.pending={type:"analysis",lines:new Map(),resolve,reject};
-    this.send(`go depth ${depth}`);
+    const searchClause=searchmoves.length?` searchmoves ${searchmoves.join(" ")}`:"";
+    this.send(`go depth ${depth}${searchClause}`);
    });
   };
   const result=this.queue.then(task,task);
@@ -269,6 +270,7 @@ function parseStockfishInfo(line){
 }
 const stockfish=new StockfishManager();
 let aiMoveRequestActive=false;
+let aiTurnSerial=0;
 let matchGeneration=0;
 function gamePhase(){
  const pieces=[...game.board()].flat().filter(Boolean),nonPawns=pieces.filter(piece=>!["p","k"].includes(piece.type));
@@ -326,7 +328,7 @@ function characterAdjustment(move,engineScore,character){
  let score=0;const notes=[];
  const add=(amount,label)=>{if(Math.abs(amount)>=1){score+=amount;notes.push(`${label} ${amount>0?"+":""}${Math.round(amount)}`);}};
  const pieceName={p:"pawn",n:"knight",b:"bishop",r:"rook",q:"queen",k:"king"}[f.piece];
- if(pieceName)add(24*(b.piecePreferences[pieceName]-.5),`${pieceName} preference`);
+ if(pieceName)add(70*(b.piecePreferences[pieceName]-.5),`${pieceName} preference`);
  if(f.check)add(26*(s.aggression-.5)+22*(s.initiative-.5)+12*(k.tacticalAwareness-.5),"attack");
  if(f.capture)add(16*(s.materialPreference-.5)+10*(k.tacticalAwareness-.5),"material");
  if(f.sacrifice)add(38*(s.sacrificePreference-.5)+24*(s.riskTolerance-.5)+18*(s.complication-.5),"sacrifice");
@@ -431,17 +433,26 @@ function mistakeProbabilities(brain,bestCandidate){
  const inaccuracy=Math.max(0,Math.min(.60,.12+eloWeakness*.24+(1-brain.decision.bestMoveDiscipline)*.12));
  return {blunder,mistake,inaccuracy};
 }
-function noticedCandidates(candidates,brain){
- const ordered=[...candidates].sort((a,b)=>b.objective-a.objective);
+function moveToUci(move){return `${move.from}${move.to}${move.promotion||""}`;}
+function noticeLegalMoves(legal,brain){
  const awareness=brain.skill.candidateAwareness;
- const minimum=Math.max(2,Math.round(2+awareness*4));
- const noticed=[];
- for(const candidate of ordered){
-  const rankFactor=1-candidate.index/Math.max(1,ordered.length-1);
-  const chance=.10+awareness*.62+rankFactor*.24;
-  if(noticed.length<minimum||seedRng()<chance)noticed.push(candidate);
- }
- return noticed.length?noticed:ordered.slice(0,minimum);
+ const tactical=(brain.skill.tacticalAwareness+brain.skill.threatAwareness)/2;
+ const target=Math.max(3,Math.min(legal.length,Math.round(3+awareness*8)));
+ const scored=legal.map(move=>{
+  let salience=seedRng()*24;
+  if(move.san.includes("#"))salience+=110*tactical;
+  else if(move.san.includes("+"))salience+=45*tactical;
+  if(move.captured)salience+=28*tactical+value[move.captured]/20;
+  if(move.san.includes("O-O"))salience+=18*brain.style.kingSafety;
+  if(["n","b"].includes(move.piece)&&move.from[1]===(move.color==="w"?"1":"8"))salience+=14*brain.style.developmentPreference;
+  const pieceName={p:"pawn",n:"knight",b:"bishop",r:"rook",q:"queen",k:"king"}[move.piece];
+  salience+=(brain.piecePreferences[pieceName]-.5)*34;
+  salience+=centerValue(move.to)*6*brain.style.pieceActivity;
+  return {move,salience};
+ }).sort((a,b)=>b.salience-a.salience);
+ const noticed=scored.slice(0,target).map(item=>item.move);
+ // Checks must be answered legally; when already in check all legal evasions remain visible.
+ return game.inCheck()?legal:noticed;
 }
 function candidatesByLoss(candidates,bestObjective,minLoss,maxLoss=Infinity){
  return candidates.filter(item=>{
@@ -450,29 +461,49 @@ function candidatesByLoss(candidates,bestObjective,minLoss,maxLoss=Infinity){
   return loss>=minLoss&&loss<maxLoss;
  });
 }
-function selectHumanMove(candidates,character,budget){
+function selectHumanMove(candidates,character,budget,trueBest){
  const brain=brainFor(character);
  const objectiveOrder=[...candidates].sort((a,b)=>b.objective-a.objective);
  const best=objectiveOrder[0];
- const bestObjective=best.objective;
- const noticed=noticedCandidates(objectiveOrder,brain);
- const probabilities=mistakeProbabilities(brain,best);
+ const benchmark=trueBest||best;
+ const bestObjective=benchmark.objective;
+ const probabilities=mistakeProbabilities(brain,benchmark);
  const roll=seedRng();
  let tier="sound",pool=[];
- if(roll<probabilities.blunder){tier="blunder";pool=candidatesByLoss(noticed,bestObjective,300);}
- else if(roll<probabilities.blunder+probabilities.mistake){tier="mistake";pool=candidatesByLoss(noticed,bestObjective,120,300);}
- else if(roll<probabilities.blunder+probabilities.mistake+probabilities.inaccuracy){tier="inaccuracy";pool=candidatesByLoss(noticed,bestObjective,35,120);}
+ if(roll<probabilities.blunder){tier="blunder";pool=candidatesByLoss(objectiveOrder,bestObjective,220);}
+ else if(roll<probabilities.blunder+probabilities.mistake){tier="mistake";pool=candidatesByLoss(objectiveOrder,bestObjective,90,220);}
+ else if(roll<probabilities.blunder+probabilities.mistake+probabilities.inaccuracy){tier="inaccuracy";pool=candidatesByLoss(objectiveOrder,bestObjective,25,90);}
  if(!pool.length){
-  const eloTolerance=Math.max(20,Math.min(260,(1700-brain.estimatedElo)/5));
-  const tolerance=Math.round(eloTolerance+brain.decision.scoreTolerance*90+(1-brain.decision.bestMoveDiscipline)*80);
-  pool=noticed.filter(item=>bestObjective-item.objective<=tolerance);
+  const eloTolerance=Math.max(35,Math.min(340,(1750-brain.estimatedElo)/4));
+  const tolerance=Math.round(eloTolerance+brain.decision.scoreTolerance*110+(1-brain.decision.bestMoveDiscipline)*110);
+  pool=objectiveOrder.filter(item=>bestObjective-item.objective<=tolerance);
   tier="sound";
  }
- if(!pool.length)pool=noticed;
+ if(!pool.length)pool=objectiveOrder;
+ // Personality matters across the whole acceptable window, rather than only near-engine ties.
  pool.sort((a,b)=>b.total-a.total);
- const choiceWindow=Math.max(1,Math.min(pool.length,Math.round(1+(1-brain.skill.practicalConsistency)*3)));
+ const choiceWindow=Math.max(1,Math.min(pool.length,Math.round(1+(1-brain.skill.practicalConsistency)*4)));
  const chosen=pool[Math.floor(seedRng()*choiceWindow)]||pool[0]||best;
- return {chosen,best,bestObjective,noticed,tier,probabilities};
+ return {chosen,best:benchmark,bestObjective,noticed:objectiveOrder,tier,probabilities};
+}
+function mistakeReason(chosen,bestObjective){
+ const loss=Math.max(0,bestObjective-chosen.objective);
+ if(chosen.mate!==null&&chosen.mate<0)return "Allowed forced mate";
+ const reply=chosen.pv?.[1];
+ if(reply){
+  const clone=new Chess(game.fen());
+  clone.move({from:chosen.move.from,to:chosen.move.to,promotion:chosen.move.promotion||"q"});
+  const replyMove=clone.moves({verbose:true}).find(m=>moveToUci(m)===reply);
+  if(replyMove?.captured){
+   const names={p:"pawn",n:"knight",b:"bishop",r:"rook",q:"queen",k:"king"};
+   if(value[replyMove.captured]>=300)return `Hangs a ${names[replyMove.captured]}`;
+   if(loss>=90)return `Drops a ${names[replyMove.captured]}`;
+  }
+ }
+ if(loss>=220)return "Major tactical blunder";
+ if(loss>=90)return "Clear mistake";
+ if(loss>=25)return "Small inaccuracy";
+ return "Sound move";
 }
 
 async function chooseMove(character){
@@ -481,22 +512,30 @@ async function chooseMove(character){
  const bookMove=openingMove(character);
  if(bookMove){character._intent="openingPreparation";character._cognitiveTrace={source:"opening book",chosen:bookMove.san};renderDiagnostics(character);return bookMove;}
  const budget=analysisBudget(character),analyzedFen=game.fen(),analyzedGeneration=matchGeneration;
- const raw=await stockfish.analyze(analyzedFen,budget);
- if(analyzedGeneration!==matchGeneration||game.fen()!==analyzedFen)return null;
  const brain=brainFor(character);
- const candidates=raw.map((entry,index)=>{
+ const noticedLegal=noticeLegalMoves(legal,brain);
+ const baselineDepth=Math.max(5,Math.min(12,Math.round(5+(brain.estimatedElo-400)/220)));
+ const [baselineRaw,raw]=await Promise.all([
+  stockfish.analyze(analyzedFen,{depth:baselineDepth,multipv:1}),
+  stockfish.analyze(analyzedFen,{...budget,multipv:Math.min(budget.multipv,noticedLegal.length),searchmoves:noticedLegal.map(moveToUci)})
+ ]);
+ if(analyzedGeneration!==matchGeneration||game.fen()!==analyzedFen)return null;
+ const makeCandidate=(entry,index)=>{
   const move=uciToLegalMove(entry.pv[0]);if(!move)return null;
   const objective=entry.score;
   const perceived=perceivedObjective(objective,character,index,budget.phase);
   const style=characterAdjustment(move,objective,character);
   return {move,objective,perceived,style,total:perceived+style.score,depth:entry.depth,mate:entry.mate,pv:entry.pv,index};
- }).filter(Boolean);
- if(!candidates.length)throw new Error("Stockfish returned no legal candidate move.");
- const selection=selectHumanMove(candidates,character,budget);
+ };
+ const candidates=raw.map(makeCandidate).filter(Boolean);
+ const trueBest=baselineRaw.map(makeCandidate).filter(Boolean)[0]||candidates[0];
+ if(!candidates.length)throw new Error("Stockfish returned no legal noticed candidate move.");
+ const selection=selectHumanMove(candidates,character,budget,trueBest);
  const chosen=selection.chosen;
  const chosenLoss=Math.max(0,selection.bestObjective-chosen.objective);
+ const reason=mistakeReason(chosen,selection.bestObjective);
  character._intent=chosen.style.features.plan;
- character._cognitiveTrace={source:"Stockfish 18 + human error model",chosen:chosen.move.san,objectiveBest:selection.best.move.san,depth:budget.depth,multipv:budget.multipv,phase:budget.phase,mistakeTier:selection.tier,chosenLoss,noticedCount:selection.noticed.length,probabilities:selection.probabilities,candidates:[...candidates].sort((a,b)=>b.objective-a.objective).map(item=>({san:item.move.san,objective:item.objective,perceived:Math.round(item.perceived),character:item.style.score,total:item.total,noticed:selection.noticed.includes(item),notes:item.style.notes}))};
+ character._cognitiveTrace={source:"Stockfish 18 + limited human vision",chosen:chosen.move.san,objectiveBest:selection.best.move.san,depth:budget.depth,multipv:budget.multipv,phase:budget.phase,mistakeTier:selection.tier,mistakeReason:reason,chosenLoss,noticedCount:noticedLegal.length,legalCount:legal.length,probabilities:selection.probabilities,candidates:[...candidates].sort((a,b)=>b.objective-a.objective).map(item=>({san:item.move.san,objective:item.objective,perceived:Math.round(item.perceived),character:item.style.score,total:item.total,noticed:true,notes:item.style.notes}))};
  renderDiagnostics(character);return chosen.move;
 }
 
@@ -509,7 +548,8 @@ function renderDiagnostics(character){
    <div><span>Engine</span><strong>${trace.source}</strong></div><div><span>Depth</span><strong>${trace.depth}</strong></div>
    <div><span>MultiPV</span><strong>${trace.multipv}</strong></div><div><span>Phase</span><strong>${trace.phase}</strong></div><div><span>Chosen</span><strong>${trace.chosen}</strong></div>
    <div><span>Objective best</span><strong>${trace.objectiveBest}</strong></div><div><span>Decision</span><strong>${trace.mistakeTier}</strong></div>
-   <div><span>Move loss</span><strong>${Math.round(trace.chosenLoss)} cp</strong></div><div><span>Moves noticed</span><strong>${trace.noticedCount}</strong></div>
+   <div><span>Reason</span><strong>${trace.mistakeReason}</strong></div><div><span>Move loss</span><strong>${Math.round(trace.chosenLoss)} cp</strong></div>
+   <div><span>Moves noticed</span><strong>${trace.noticedCount} / ${trace.legalCount}</strong></div>
   </div>
   <div class="candidate-list">${trace.candidates.map((item,index)=>`<div><span>${index+1}. ${item.san}${item.noticed?"":" · unseen"}${item.notes.length?` · ${item.notes.join(", ")}`:""}</span><span>SF ${item.objective} · perceived ${item.perceived} · style ${item.character>=0?"+":""}${Math.round(item.character)} · total ${Math.round(item.total)}</span></div>`).join("")}</div>`;
 }
@@ -660,24 +700,31 @@ function updateMoveControls(){
 }
 function pauseMatch(){
  running=false;
+ aiTurnSerial++;
  clearTimeout(timer);
  $("#play").textContent="▶ Run";
 }
 async function requestAiMove({resume=false}={}){
  if(aiMoveRequestActive||game.isGameOver()||sideMode(game.turn())!=="ai")return;
  aiMoveRequestActive=true;
+ const serial=++aiTurnSerial;
  const requestGeneration=matchGeneration;
  const requestFen=game.fen();
- const character=game.turn()==="w"?config.white:config.black;
+ const requestTurn=game.turn();
+ const requestHistoryLength=game.history().length;
+ const character=requestTurn==="w"?config.white:config.black;
  try{
   const move=await chooseMove(character);
-  if(!move||requestGeneration!==matchGeneration||game.fen()!==requestFen)return;
+  if(!move||serial!==aiTurnSerial||requestGeneration!==matchGeneration||game.fen()!==requestFen||game.turn()!==requestTurn||game.history().length!==requestHistoryLength)return;
   const made=game.move(move);
-  if(made)afterMove(made,resume);
+  if(!made)return;
+  if(game.history().length!==requestHistoryLength+1)throw new Error("AI turn integrity check failed: more than one move was applied.");
+  afterMove(made,false);
+  if(resume&&!game.isGameOver())scheduleAi();
  }catch(error){
   if(requestGeneration===matchGeneration)handleEngineFailure(error);
  }finally{
-  aiMoveRequestActive=false;
+  if(serial===aiTurnSerial)aiMoveRequestActive=false;
  }
 }
 async function playNextAiMove(){

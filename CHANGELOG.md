@@ -319,3 +319,12 @@ Changes:
 - Removed Adair's opening book because his profile explicitly says he does not know chess.
 - Recalibrated Daika from 1050 to 750 Elo and removed her opening book so she behaves as an intentionally easy opponent.
 - Kept Adair's high knight preference as a live move-selection weight.
+
+## Phase 15 — Limited Vision and Turn Integrity
+
+- Replaced post-analysis candidate hiding with pre-analysis legal-move awareness. Characters now notice a profile-driven subset of legal moves, and Stockfish evaluates only that subset for their decision.
+- Added a separate best-move benchmark so missed moves can produce real evaluation loss.
+- Strengthened active `piecePreferences` scoring inside the acceptable candidate window. Adair's knight preference now influences both which legal moves he notices and which acceptable move he selects.
+- Added concrete diagnostic reasons such as hanging a piece, dropping a pawn, allowing forced mate, clear mistake, and small inaccuracy.
+- Added AI turn serial, FEN, side-to-move, history-length, and generation checks. Exactly one legal move may be committed by each AI request.
+- AI continuation is scheduled only after the committed move passes the turn-integrity check.
